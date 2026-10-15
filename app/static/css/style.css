@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #0a0a2a;
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#quest-container {
+    max-width: 700px;
+    padding: 30px;
+    background: #1a1a3a;
+    border: 2px solid #4a4aff;
+    border-radius: 10px;
+}
+
+#choices button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    background: #4a4aff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#choices button:hover {
+    background: #6a6aff;
+}
+
+#state {
+    margin: 15px 0;
+    color: #ffd700;
+}

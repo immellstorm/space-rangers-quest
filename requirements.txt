@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+pytest
+requests
+playwright
+responses
+pytest-playwright
+allure-pytest

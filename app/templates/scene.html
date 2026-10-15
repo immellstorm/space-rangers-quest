@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scene.title }}{% endblock %}
+
+{% block content %}
+<h1 id="quest-title">{{ scene.title }}</h1>
+<p id="quest-text">{{ scene.text }}</p>
+
+<div id="state">
+    <span>Кредиты: {{ state.money }}</span>
+</div>
+
+{% if scene.choices %}
+<form id="choices" method="post" action="/choose">
+    {% for choice in scene.choices %}
+    <button type="submit" name="choice_index" value="{{ loop.index0 }}">
+        {{ choice.text }}
+    </button>
+    {% endfor %}
+</form>
+{% else %}
+<div id="final">
+    <p>Квест завершён.</p>
+    <form method="post" action="/reset">
+        <button type="submit">Начать заново</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
