@@ -23,7 +23,7 @@ def test_accept_quest_moves_to_accepted(page):
     quest.choose("Принять задание")
 
     quest.expect_text_contains("Теперь к делу")
-    quest.expect_choices_count(2)
+    quest.expect_choices_count(3)
 
 
 def test_reject_quest_moves_to_final(page):
@@ -40,6 +40,7 @@ def test_reject_quest_moves_to_final(page):
     [
         (["Принять задание", "Уничтожить крейсер"], "сорвали строительство", 5000),
         (["Принять задание", "Договориться"], "Пираты согласились", 2000),
+        (["Принять задание", "Разведать обстановку"], "", 0),
         (["Отказаться"], "Как хотите", 0),
     ],
 )
@@ -51,7 +52,6 @@ def test_quest_paths(page, choices, expected_text, expected_money):
 
     quest.expect_text_contains(expected_text)
     quest.expect_money(expected_money)
-
 
 def test_cannot_choose_after_final(page):
     quest = QuestPage(page).goto()
@@ -71,3 +71,12 @@ def test_reset_returns_to_start(page):
 
     quest.expect_title("Гнездо пиратов")
     quest.expect_choices_count(2)
+
+def test_scout_moves_to_scout_scene(page):
+    quest = QuestPage(page).goto()
+
+    quest.choose("Принять задание")  
+    quest.choose("Разведать обстановку")
+
+    quest.expect_text_contains("дроид-разведчика")
+    quest.expect_choices_count(3)

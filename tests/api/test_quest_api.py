@@ -39,14 +39,19 @@ def test_choose_moves_scene(api_client):
     assert state["current_scene"] == "accepted"
 
 
-def test_choose_invalid_index_returns_500(api_client):
+def test_choose_invalid_index_returns_400(api_client):
     response = api_client.post(
         f"{BASE_URL}/choose",
         data={"choice_index": 99},
         allow_redirects=False,
     )
+    assert response.status_code == 400
+    assert "Неверный индекс" in response.json()["detail"]
 
-    assert response.status_code == 500
+def test_choose_on_final_scene_returns_400(api_client):
+    api_client.post(f"{BASE_URL}/choose", data={"choice_index": 1})
+    r = api_client.post(f"{BASE_URL}/choose", data={"choice_index": 0}, allow_redirects=False)
+    assert r.status_code == 400
 
 def test_reset_returns_to_start(api_client):
     api_client.post(f"{BASE_URL}/choose", data={"choice_index": 0})
@@ -60,3 +65,10 @@ def test_reset_returns_to_start(api_client):
     state_after = api_client.get(f"{BASE_URL}/api/state").json()
     assert state_after["current_scene"] == "start"
     assert state_after["money"] == 0
+
+def test_relations_updated_on_negotiate(api_client):
+    api_client.post(f"{BASE_URL}/choose", data={"choice_index": 0})  # accepted
+    api_client.post(f"{BASE_URL}/choose", data={"choice_index": 1})  # negotiate
+    state = api_client.get(f"{BASE_URL}/api/state").json()
+    assert state["relations"]["Peleng"] == 5
+    assert state["money"] == 2000

@@ -4,15 +4,15 @@
 
 {% block content %}
 <h1 id="quest-title">{{ scene.title }}</h1>
-<p id="quest-text">{{ scene.text }}</p>
+<p id="quest-text">{{ text }}</p>
 
 <div id="state">
     <span>Кредиты: {{ state.money }}</span>
 </div>
 
-{% if scene.choices %}
+{% if choices %}
 <form id="choices" method="post" action="/choose">
-    {% for choice in scene.choices %}
+    {% for choice in choices %}
     <button type="submit" name="choice_index" value="{{ loop.index0 }}">
         {{ choice.text }}
     </button>

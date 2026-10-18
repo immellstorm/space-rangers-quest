@@ -39,3 +39,13 @@ def test_final_scenes_have_reward():
     for name, scene in SCENES.items():
         if not scene["choices"]:
             assert "reward" in scene, f"Сцена '{name}' без награды"
+
+def test_make_choice_from_accepted():
+    assert make_choice("accepted", 0) == "destroy"
+    assert make_choice("accepted", 1) == "negotiate"
+    assert make_choice("accepted", 2) == "scout"
+
+def test_make_choice_from_scout():
+    assert make_choice("scout", 0) == "destroy"
+    assert make_choice("scout", 1) == "negotiate"
+    assert make_choice("scout", 2) == "cache"
