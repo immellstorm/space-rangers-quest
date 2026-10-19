@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Выбор квеста{% endblock %}
+
+{% block content %}
+<div class="quests-layout">
+
+    <div class="block">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <h2 id="quests-title">В какое приключение отправимся?</h2>
+        <ul id="quests-list">
+            {% for q in quests %}
+            <li>
+                <form method="post" action="/quests/select">
+                    <input type="hidden" name="quest_id" value="{{ q.id }}">
+                    <button type="submit" class="quest-item">
+                        <span class="quest-info">
+                            <span class="quest-name">{{ q.title }}</span>
+                            <span class="quest-desc">{{ q.description }}</span>
+                        </span>
+                        <img class="quest-thumb" src="/static/images/your_name.jpeg" alt="{{ q.title }}">
+                    </button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</div>
+{% endblock %}

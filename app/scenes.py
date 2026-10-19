@@ -133,10 +133,10 @@ SCENES = {
         ),
         "choices": [
             {"text": "Купить бомбу (200 рублей)", "next": "buy_boom",
-            "condition": {"flag_absent": "has_license"}},
+            "condition": {"flag_absent": "has_license", "inventory_absent": "bomb"}},
             {"text": "Купить бомбу (200 рублей)", "next": "buy_boom_ok",
-            "condition": {"flag_present": "has_license", "money_at_least": 200},
-            "gives": {"money": -200, "inventory": {"bomb": 1}}},
+            "condition": {"flag_present": "has_license", "money_at_least": 200, "inventory_absent": "bomb"},
+            "gives": {"money": -200, "inventory": {"bomb": 1}, "flags": {"has_license": False}}},
             {"text": "Купить дроида (50 рублей)", "next": "buy_droid",
             "condition": {"inventory_absent": "droid", "money_at_least": 50},
             "gives": {"money": -50, "inventory": {"droid": 1}}},
@@ -272,7 +272,11 @@ SCENES = {
             "Решив больше здесь не задерживаться, вы вернулись на корабль и поднялись над этим нищим спутником, направляясь ко второй луне планеты. "
         ),
         "choices": [
-            {"text": "Лететь ко второй луне", "next": "second_moon"},    
+            {
+                "text": "Лететь ко второй луне",
+                "next": "second_moon",
+                "gives": {"money": -500, "inventory": {"bomb": 1}},
+            },
         ],
     },
 

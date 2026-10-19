@@ -31,20 +31,49 @@ STATE = {
     "flags": {},    
 }
 
+QUESTS = [
+    {
+        "id": "pirate_lair",
+        "title": "Гнездо пиратов",
+        "description": "Пиратская база. Крейсер доминаторов. И ты — один против всех.",
+        "start_scene": "start",
+    },
+]
+
+ITEM_NAMES = {
+    "droid": "Дроид",
+    "drill": "Бур",
+    "pickaxe": "Кирка",
+    "bomb": "Бомба",
+    "timer": "Таймер",
+    "detonator": "Детонатор",
+    "explosive": "Взрывчатка",
+}
+
 @app.post("/start")
 def start(player_name: str = Form(...)):
     STATE["player_name"] = player_name.strip() or "Рейнджер"
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/quests", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     if not STATE["player_name"]:
         return templates.TemplateResponse("intro.html", {"request": request})
+    
+    if "quest_id" not in STATE["flags"]:
+        return RedirectResponse("/quests", status_code=303)
     scene = get_scene(STATE["current_scene"])
+
     text = scene["text"].format(player_name=STATE["player_name"])
+
     choices = [
         {**c, "text": c["text"].format(player_name=STATE["player_name"])}
         for c in visible_choices(scene, STATE)
+    ]
+
+    inventory_display = [
+        {"name": ITEM_NAMES.get(item, item), "count": count}
+        for item, count in STATE["inventory"].items()
     ]
     return templates.TemplateResponse(
         "scene.html",
@@ -54,6 +83,7 @@ def index(request: Request):
             "state": STATE,
             "text": text,
             "choices": choices,
+            "inventory_display": inventory_display,
         },
     )
 
@@ -71,6 +101,25 @@ def choose(choice_index: int = Form(...)):
         for race, delta in scene["reward"].get("relations", {}).items():
             STATE["relations"][race] = STATE["relations"].get(race, 0) + delta
 
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/quests", response_class=HTMLResponse)
+def quests_list(request: Request):
+    if not STATE["player_name"]:
+        return RedirectResponse("/", status_code=303)
+    return templates.TemplateResponse(
+        "quests.html",
+        {"request": request, "state": STATE, "quests": QUESTS},
+    )
+
+
+@app.post("/quests/select")
+def quests_select(quest_id: str = Form(...)):
+    quest = next((q for q in QUESTS if q["id"] == quest_id), None)
+    if quest is None:
+        raise HTTPException(status_code=404, detail="Квест не найден")
+    STATE["current_scene"] = quest["start_scene"]
+    STATE["flags"]["quest_id"] = quest_id
     return RedirectResponse("/", status_code=303)
 
 

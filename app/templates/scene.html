@@ -1,29 +1,72 @@
 {% extends "base.html" %}
-
 {% block title %}{{ scene.title }}{% endblock %}
 
 {% block content %}
 <h1 id="quest-title">{{ scene.title }}</h1>
-<p id="quest-text">{{ text }}</p>
 
-<div id="state">
-    <span>Кредиты: {{ state.money }}</span>
-</div>
+<div class="layout layout-scene">
 
-{% if choices %}
-<form id="choices" method="post" action="/choose">
-    {% for choice in choices %}
-    <button type="submit" name="choice_index" value="{{ loop.index0 }}">
-        {{ choice.text }}
-    </button>
-    {% endfor %}
-</form>
-{% else %}
-<div id="final">
-    <p>Квест завершён.</p>
-    <form method="post" action="/reset">
-        <button type="submit">Начать заново</button>
-    </form>
+    <div class="block text-block">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <p id="quest-text">{{ text }}</p>
+    </div>
+
+    <div class="block image-block" id="scene-image">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <img src="/static/images/your_name.jpeg" alt="{{ scene.title }}">
+    </div>
+
+    <div class="block choices-block">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        {% if choices %}
+        <form id="choices" method="post" action="/choose">
+            {% for choice in choices %}
+            <button type="submit" name="choice_index" value="{{ loop.index0 }}">
+                {{ choice.text }}
+            </button>
+            {% endfor %}
+        </form>
+        {% else %}
+        <div id="final">
+            <p>Квест завершён.</p>
+            <form method="post" action="/reset">
+                <button type="submit">Начать заново</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="block inventory-block" id="inventory">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <h2>Деньги</h2>
+        <p><span>{{ state.money }}</span> руб.</p>
+
+        <h2>Инвентарь</h2>
+        {% if inventory_display %}
+        <p class="inventory-line">
+            {% for item in inventory_display %}{{ item.name }} ×{{ item.count }}{% if not loop.last %}, {% endif %}{%
+            endfor %}
+        </p>
+        {% else %}
+        <p>Пусто</p>
+        {% endif %}
+
+        {% if state.flags.has_license %}
+        <p>✓ Лицензия шахтёра</p>
+        {% endif %}
+    </div>
+
 </div>
-{% endif %}
 {% endblock %}
