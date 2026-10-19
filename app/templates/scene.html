@@ -63,8 +63,9 @@
         <p>Пусто</p>
         {% endif %}
 
-        {% if state.flags.has_license %}
-        <p>✓ Лицензия шахтёра</p>
+        {% if state.trust.Kacap is defined %}
+        <h2>Доверие Кацапа</h2>
+        <p>{{ state.trust.Kacap }}%</p>
         {% endif %}
     </div>
 

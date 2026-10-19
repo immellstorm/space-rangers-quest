@@ -126,12 +126,11 @@ a:hover {
 .image-block {
     grid-column: 2;
     grid-row: 1;
-    padding: 8px;
+    padding: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 0;
-    overflow: hidden;
 }
 
 .image-block img {
