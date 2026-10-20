@@ -65,7 +65,10 @@ def index(request: Request):
         return RedirectResponse("/quests", status_code=303)
     scene = get_scene(STATE["current_scene"])
 
-    text = scene["text"].format(player_name=STATE["player_name"])
+    text = scene["text"].format(
+        player_name=STATE["player_name"],
+        days=STATE["days"],
+    )
 
     choices = [
         {**c, "text": c["text"].format(player_name=STATE["player_name"])}
