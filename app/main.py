@@ -15,7 +15,7 @@ from app.scenes import (
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="Космические Рейнджеры 2")
+app = FastAPI(title="Космические квесты")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
@@ -28,7 +28,8 @@ STATE = {
     "history": [],
     "inventory": {},
     "trust": {},
-    "flags": {},    
+    "flags": {}, 
+    "days": 0,   
 }
 
 QUESTS = [
@@ -75,6 +76,7 @@ def index(request: Request):
         {"name": ITEM_NAMES.get(item, item), "count": count}
         for item, count in STATE["inventory"].items()
     ]
+
     return templates.TemplateResponse(
         "scene.html",
         {
@@ -90,16 +92,10 @@ def index(request: Request):
 @app.post("/choose")
 def choose(choice_index: int = Form(...)):
     next_scene, choice = make_choice(STATE["current_scene"], choice_index, STATE)
-    apply_effects(STATE, choice.get("gives"))        # ← ставим флаги, списываем деньги
+    apply_effects(STATE, choice.get("gives"))  
 
     STATE["history"].append(STATE["current_scene"])
     STATE["current_scene"] = next_scene
-
-    scene = get_scene(next_scene)
-    if scene.get("reward"):
-        STATE["money"] += scene["reward"].get("money", 0)
-        for race, delta in scene["reward"].get("relations", {}).items():
-            STATE["relations"][race] = STATE["relations"].get(race, 0) + delta
 
     return RedirectResponse("/", status_code=303)
 
@@ -133,6 +129,7 @@ def reset():
     STATE["inventory"] = {}
     STATE["trust"] = {}
     STATE["flags"] = {}
+    STATE["days"] = 0
     return RedirectResponse("/", status_code=303)
 
 

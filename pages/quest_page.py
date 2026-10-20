@@ -9,9 +9,10 @@ class QuestPage:
         self.page = page
         self.title = page.locator("#quest-title")
         self.text = page.locator("#quest-text")
-        self.money = page.locator("#state span")
         self.choices = page.locator("#choices button")
         self.final_block = page.locator("#final")
+        self.money = page.locator("#money-line")
+        self.days = page.locator("#days-line")
 
 
     def goto(self) -> "QuestPage":
@@ -34,6 +35,11 @@ class QuestPage:
 
     def get_money(self) -> str:
          return (self.money.text_content() or "").strip()
+
+    def get_days(self) -> int:
+        text = (self.days.text_content() or "").strip()
+        digits = "".join(ch for ch in text if ch.isdigit())
+        return int(digits or 0)
 
     def get_choices(self) -> list[str]:
         return [(btn.text_content() or "").strip() for btn in self.choices.all()]

@@ -34,12 +34,6 @@ def test_make_choice_invalid_index_raises():
     with pytest.raises(IndexError):
         make_choice("start", 99)
 
-
-def test_final_scenes_have_reward():
-    for name, scene in SCENES.items():
-        if not scene["choices"]:
-            assert "reward" in scene, f"Сцена '{name}' без награды"
-
 def test_make_choice_from_accepted():
     assert make_choice("accepted", 0) == "destroy"
     assert make_choice("accepted", 1) == "negotiate"

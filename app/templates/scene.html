@@ -51,7 +51,7 @@
         <span class="corner bl"></span>
         <span class="corner br"></span>
         <h2>Деньги</h2>
-        <p><span>{{ state.money }}</span> руб.</p>
+        <p id="money-line"><span>{{ state.money }}</span> руб.</p>
 
         <h2>Инвентарь</h2>
         {% if inventory_display %}
@@ -61,6 +61,11 @@
         </p>
         {% else %}
         <p>Пусто</p>
+        {% endif %}
+
+        {% if state.days > 0 %}
+        <h2>Задание</h2>
+        <p id="days-line"><span>{{ state.days }}</span> дн.</p>
         {% endif %}
 
         {% if state.trust.Kacap is defined %}
