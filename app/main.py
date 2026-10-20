@@ -4,6 +4,7 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Form, Request, HTTPException
 
 from app.scenes import (
     SCENES,
@@ -49,6 +50,8 @@ ITEM_NAMES = {
     "timer": "Таймер",
     "detonator": "Детонатор",
     "explosive": "Взрывчатка",
+    "photo": "Фотография с пеленгессами",
+    "detonator": "Детонатор и взрывчатка",
 }
 
 @app.post("/start")
@@ -68,6 +71,7 @@ def index(request: Request):
     text = scene["text"].format(
         player_name=STATE["player_name"],
         days=STATE["days"],
+        money=STATE["money"],
     )
 
     choices = [
