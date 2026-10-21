@@ -72,6 +72,13 @@
         <h2>Доверие Кацапа</h2>
         <p>{{ state.trust.Kacap }}%</p>
         {% endif %}
+
+        {% if brew_lines %}
+        <h2>Напиток</h2>
+        {% for line in brew_lines %}
+        <p>{{ line }}</p>
+        {% endfor %}
+        {% endif %}
     </div>
 
 </div>

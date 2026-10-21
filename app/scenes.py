@@ -777,7 +777,7 @@ SCENES = {
             "condition": {"flag_present": "katsap_met",
                         "trust_below": {"name": "Kacap", "value": 30}}},
 
-            {"text": "В комнату Кацапа (пусто)", "next": "katsap_room_empty",
+            {"text": "В комнату Кацапа", "next": "katsap_room_empty",
             "condition": {"flag_present": "katsap_met",
                         "trust_at_least": {"name": "Kacap", "value": 30},
                         "trust_below": {"name": "Kacap", "value": 45}}},
@@ -840,24 +840,24 @@ SCENES = {
     "go_to_shelf": {
         "title": "Гнездо пиратов",
         "text": (
-            "Вы внимательно осмотрели колбы: ни на одной из них не было бирки. "
-            "Только четыре безликих колбы с прозрачной жидкостью. Нужно что-то делать."
+            "Всего на полках 4 колбы. "
+            "Мда... Осталось выбрать кислоту."
         ),
         "choices": [
-            {"text": "Взять первую колбу", "next": "get_acid_false",
+            {"text": "Взять первую колбу - серная кислота", "next": "get_acid_false",
             "condition": {"flag_absent": "took_acid"},
             "gives": {"flags": {"took_acid": True}, "inventory": {"acid": 1}}},
 
-            {"text": "Взять вторую колбу", "next": "get_acid_false",
+            {"text": "Взять вторую колбу - изиодная кислота", "next": "get_acid_false",
             "condition": {"flag_absent": "took_acid"},
             "gives": {"flags": {"took_acid": True}, "inventory": {"acid": 1}}},
 
-            {"text": "Взять третью колбу", "next": "get_acid_true",
+            {"text": "Взять третью колбу - угольная кислота", "next": "get_acid_true",
             "condition": {"flag_absent": "took_acid"},
             "gives": {"flags": {"took_acid": True, "true_acid": True},
                     "inventory": {"acid": 1}}},
 
-            {"text": "Взять четвёртую колбу", "next": "get_acid_false",
+            {"text": "Взять четвёртую колбу - азотная кислота", "next": "get_acid_false",
             "condition": {"flag_absent": "took_acid"},
             "gives": {"flags": {"took_acid": True}, "inventory": {"acid": 1}}},
 
@@ -913,16 +913,16 @@ SCENES = {
     },
 
    "post_500_rub": {
-    "title": "Гнездо пиратов",
-    "text": (
-        "Пеленг жадно схватил протянутые деньги и открыл дверь. "
-        "— Проходи, — сказал он, сделав всеми четырьмя руками приглашающий жест. "
-        "Вы прошли в кладовку."
-    ),
-    "choices": [
-        {"text": "Далее", "next": "set_card"},
-    ],
-},
+        "title": "Гнездо пиратов",
+        "text": (
+            "Пеленг жадно схватил протянутые деньги и открыл дверь. "
+            "— Проходи, — сказал он, сделав всеми четырьмя руками приглашающий жест. "
+            "Вы прошли в кладовку."
+        ),
+        "choices": [
+            {"text": "Далее", "next": "set_card"},
+        ],
+    },
 
     "set_card": {
         "title": "Гнездо пиратов",
@@ -1146,9 +1146,330 @@ SCENES = {
         "text": (
             "Вы в кухне. Она заставлена новейшей бытовой техникой и всем, что нужно для приготовления самых экзотических блюд. Фэянин возле посудомоечного аппарата со скукой собирает вымытые тарелки. Из поломанного с прошлой гулянки крана капает вода. На столике стоит точнейший мини-анализатор, высчитывающий граммы до 0,00001. Вполне достаточно, чтобы приготовить любое современное блюдо. Рядом лежит кулинарная книга."
         ),
+         "choices": [
+            {"text": "Приступить к приготовлению напитка»",
+            "next": "brew_ryaska",
+            "condition": {"inventory_has_all": [
+                "swarm_water", "sandy", "flowers", "spirt", "water", "acid"
+            ]}},
+            {"text": "Почитать кулинарную книгу", "next": "cooking_book"},
+            {"text": "В столовую", "next": "eat_room"},
+        ],
+    },
+
+   "brew_ryaska": {
+        "title": "Гнездо пиратов",
+        "text": "Вы у мини-анализатора. Пора смешать всё по рецепту.",
         "choices": [
-            {"text": "Почитать кулинарную книгу", "next": "cooking_book"}, 
-            {"text": "В столовую", "next": "eat_room"}, 
+            {"text": "Досыпать песка", "next": "post_sandy",
+            "condition": {"flag_absent": "added_sandy",
+                        "inventory_has_all": ["sandy"]}},
+
+            {"text": "Добавить водорослей", "next": "post_flowers",
+            "condition": {"flag_absent": "added_flowers",
+                        "inventory_has_all": ["flowers"]}},
+
+            {"text": "Долить кислоты", "next": "post_acid",
+            "condition": {"flag_absent": "added_acid",
+                        "inventory_has_all": ["acid"]}},
+
+            {"text": "Долить спирта", "next": "post_spirt",
+            "condition": {"flag_absent": "added_spirt",
+                        "inventory_has_all": ["spirt"]}},
+
+            {"text": "Долить воды", "next": "post_water",
+            "condition": {"flag_absent": "added_water",
+                        "inventory_has_all": ["water"]}},
+
+            {"text": "Долить болотной жижи", "next": "post_swarm_water",
+            "condition": {"flag_absent": "added_swarm_water",
+                        "inventory_has_all": ["swarm_water"]}},
+
+           {"text": "Помешать 10 минут на слабом огне и принести «ряску» Кацапу",
+            "next": "brew_result",
+            "condition": {"flags_all": [
+                "added_sandy", "added_flowers", "added_acid",
+                "added_spirt", "added_water", "added_swarm_water",
+            ]}},
+
+            {"text": "Свериться с рецептом", "next": "see_recept"},
+        ],
+    },
+
+    "see_recept": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " Вы придвинулись к галокниге. В легком голубоватом мерцании горел текст:"
+ 
+            "...                  * * *"
+ 
+            "Одна порция коктейля равна 100 мл."
+ 
+                              "ПРИГОТОВЛЕНИЕ:"
+ 
+            "Смешайте вышеуказанные компоненты в пропорциях: на одну пятую стакана воды долить одну пятую стакана болотной жижи и полстакана спирта. Добавьте 5 мл слабой угольной кислоты, чтобы придать напитку кисловато-жгучий вкус. Досыпьте столько же (около 2 г от общей массы напитка) песка и добавьте 3 г водорослей, затем помешивайте 10 минут на слабом огне и разливайте по бокалам. Ваши пеленгские гости будут рады такому угощению!"
+ 
+            "Внимание! Никогда не добавляйте уже налитый компонент второй раз! Иначе напиток прокиснет и будет непригоден для употребления. "
+ 
+            "___________________ стр. 1826 __________________"
+        ),
+        "choices": [
+            {"text": "Вернуться к приготовлению напитка", "next": "brew_ryaska"}, 
+        ],
+    },
+
+   "post_sandy": {
+        "title": "Гнездо пиратов",
+        "text": "Вы загребли стакан песка. Сколько досыпать в котёл?",
+        "choices": [
+            {"text": "2 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_sandy": True, "sandy_g": 2},
+                    "inventory": {"sandy": -1}}},
+            {"text": "5 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_sandy": True, "sandy_g": 5},
+                    "inventory": {"sandy": -1}}},
+            {"text": "10 г.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_sandy": True, "sandy_g": 10},
+                    "inventory": {"sandy": -1}}},
+            {"text": "20 г.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_sandy": True, "sandy_g": 20},
+                    "inventory": {"sandy": -1}}},
+            {"text": "50 г.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_sandy": True, "sandy_g": 50},
+                    "inventory": {"sandy": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
+        ],
+    },
+
+    "ryaska_ready": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Напиток вышел на славу — в меру жгучий, в меру болотный. "
+            "Кацап такое оценит. Пора нести."
+        ),
+        "choices": [{"text": "Отнести катцапу", "next": "post_raska_to_katsap_ready"}],
+    },
+
+    "ryaska_failed": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Вы попробовали — гадость редкостная. То ли кислоты не та, "
+            "то ли пропорции перепутали. Такую «ряску» Кацап пить не станет. "
+            "Ингредиенты потрачены зря — вторую порцию из чего варить, непонятно."
+        ),
+        "choices": [{"text": "Отнести катцапу", "next": "post_raska_to_katsap_no_ready"}],
+    },
+
+    "post_raska_to_katsap_no_ready": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Вы вошли в комнату босса. Кацап валялся на кровати и смотрел стереовизор: на экране шел какой-то брутальный боевик про нападение пеленгских террористов на гаальское посольство планеты Элиния, где находится одна из крупнейших дипломатических баз. Несчастные желтокожие гуманоиды звали на помощь, а пеленги прижаривали их бластерными зарядами к стенам."
+            "- Привет, братан, - протянул Кацап. - Что надо?"
+            "- Да вот, я подумал, может, ты \"Болотной ряски\" хочешь?"
+            "Кацап ужасно обрадовался."
+            "- Давно я не пил любимой ряски! Все под боком, а сделать некогда. Надеюсь, ты не хочешь меня отравить? - сказал неуверенно Кацап."
+            "- Нет, - искренне сказали вы."
+            "- Давай-ка посмотрим. Я знаю, какова ряска на вид, запах и цвет."
+            "Кацап протянул правую нижнюю руку."
+        ),
+        "choices": [
+            {"text": "Протянуть стакан", "next": "kill_katsap"},
+            {"text": "Рвануть на кухню, оправдываясь: \"Кажется, я напутал с рецептом, сейчас новую \"ряску\" принесу!\"", "next": "brew_ryaska", "gives": {"trust": {"Kacap": -15}}}
+        ],
+    },
+
+    "kill_katsap": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " Кацап забыл проверить ряску и выпил все, не пробуя. Судя по предсмертной агонии вашего босса, вы выбрали не ту кислоту. Теперь уже Кацап никому ничего не скажет. Вы сбежали с места преступления, сели в свой корабль и вернулись обратно на планету Полуось. Плакали ваши денежки"
+        ),
+        "choices": [],
+    },
+
+    "like_katsap": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " Кацап поводил пальцем в стакане, наморщился и сказал: "
+            "- Эта ряска неправильно приготовлена... Ха-ха. Шучу, {player_name}! Все ты правильно сделал. А рецепт сложный, между прочим."
+            "С этими словами Кацап отхлебнул немного, а затем не отрываясь опустошил стакан."
+            "- Ух, хорошо пошла! Давненько я не баловался прекрасной ряской. Уважил ты меня,{player_name}! "
+ 
+            "Пеленг протянул вам стакан и попросил отнести его на кухню."
+        ),
+        "choices": [
+             {"text": "Занести стакан на кухню", "next": "cooking_room"},
+        ],
+    },
+
+    "post_raska_to_katsap_ready": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Вы вошли в комнату босса. Кацап валялся на кровати и смотрел стереовизор: на экране шел какой-то брутальный боевик про нападение пеленгских террористов на гаальское посольство планеты Элиния, где находится одна из крупнейших дипломатических баз. Несчастные желтокожие гуманоиды звали на помощь, а пеленги прижаривали их бластерными зарядами к стенам."
+            "- Привет, братан, - протянул Кацап. - Что надо?"
+            "- Да вот, я подумал, может, ты \"Болотной ряски\" хочешь?"
+            "Кацап ужасно обрадовался."
+            "- Давно я не пил любимой ряски! Все под боком, а сделать некогда. Надеюсь, ты не хочешь меня отравить? - сказал неуверенно Кацап."
+            "- Нет, - искренне сказали вы."
+            "- Давай-ка посмотрим. Я знаю, какова ряска на вид, запах и цвет."
+            "Кацап протянул правую нижнюю руку."
+        ),
+        "choices": [
+            {"text": "Протянуть стакан", "next": "like_katsap",  "gives": {"trust": {"Kacap": +35}}},
+            {"text": "Рвануть на кухню, оправдываясь: \"Кажется, я напутал с рецептом, сейчас новую \"ряску\" принесу!\"", "next": "brew_ryaska", "gives": {"trust": {"Kacap": -15}}}
+        ],
+    },
+
+    "brew_result": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Вы помешали 10 минут на слабом огне, разлили по стаканам. "
+            "Пахнет… вроде как надо. Но проверить можно только одним способом — попробовать."
+        ),
+        "choices": [
+            {"text": "Попробовать и нести Кацапу",
+            "next": "ryaska_ready",
+            "condition": {
+                "flag_present": "true_acid",
+                "flags_exact": {
+                    "sandy_g": 2, "flowers_g": 3, "acid_ml": 5,
+                    "spirt_ml": 50, "water_ml": 20, "swarm_water_ml": 20,
+                },
+            },
+            "gives": {"flags": {"ryaska_ok": True},
+                    "inventory": {"ryaska": 1}}},
+
+            {"text": "Попробовать и нести Кацапу (пахнет не так...)",
+            "next": "ryaska_failed",
+            "condition": {"flag_absent": "true_acid"},
+            "gives": {"flags": {"ryaska_bad": True},
+                    "inventory": {"ryaska": 1}}},
+
+            {"text": "Попробовать и нести Кацапу (пахнет не так...)",
+            "next": "ryaska_failed",
+            "condition": {
+                "flag_present": "true_acid",
+                "flags_not_exact": {
+                    "sandy_g": 2, "flowers_g": 3, "acid_ml": 5,
+                    "spirt_ml": 50, "water_ml": 20, "swarm_water_ml": 20,
+                },
+            },
+            "gives": {"flags": {"ryaska_bad": True},
+                    "inventory": {"ryaska": 1}}},
+        ],
+    },
+
+    "post_flowers": {
+        "title": "Гнездо пиратов",
+        "text": "Вы отделили горсть болотных водорослей. Сколько добавить в котёл?",
+        "choices": [
+            {"text": "1 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_flowers": True, "flowers_g": 1},
+                    "inventory": {"flowers": -1}}},
+            {"text": "2 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_flowers": True, "flowers_g": 2},
+                    "inventory": {"flowers": -1}}},
+            {"text": "3 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_flowers": True, "flowers_g": 3},
+                    "inventory": {"flowers": -1}}},
+            {"text": "5 г.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_flowers": True, "flowers_g": 5},
+                    "inventory": {"flowers": -1}}},
+            {"text": "10 г.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_flowers": True, "flowers_g": 10},
+                    "inventory": {"flowers": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
+        ],
+    },
+
+    "post_acid": {
+        "title": "Гнездо пиратов",
+        "text": "Вы отмерили кислоту. Сколько влить в котёл?",
+        "choices": [
+            {"text": "1 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_acid": True, "acid_ml": 1},
+                    "inventory": {"acid": -1}}},
+            {"text": "3 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_acid": True, "acid_ml": 3},
+                    "inventory": {"acid": -1}}},
+            {"text": "5 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_acid": True, "acid_ml": 5},
+                    "inventory": {"acid": -1}}},
+            {"text": "10 мл.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_acid": True, "acid_ml": 10},
+                    "inventory": {"acid": -1}}},
+            {"text": "20 мл.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_acid": True, "acid_ml": 20},
+                    "inventory": {"acid": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
+        ],
+    },
+
+    "post_spirt": {
+        "title": "Гнездо пиратов",
+        "text": "Вы откупорили бутылку 99%-го спирта. Сколько влить?",
+        "choices": [
+            {"text": "10 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_spirt": True, "spirt_ml": 10},
+                    "inventory": {"spirt": -1}}},
+            {"text": "20 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_spirt": True, "spirt_ml": 20},
+                    "inventory": {"spirt": -1}}},
+            {"text": "30 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_spirt": True, "spirt_ml": 30},
+                    "inventory": {"spirt": -1}}},
+            {"text": "50 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_spirt": True, "spirt_ml": 50},
+                    "inventory": {"spirt": -1}}},
+            {"text": "100 мл.", "next": "brew_ryaska",
+            "gives": {"flags": {"added_spirt": True, "spirt_ml": 100},
+                    "inventory": {"spirt": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
+        ],
+    },
+
+    "post_water": {
+        "title": "Гнездо пиратов",
+        "text": "Вы зачерпнули воду из ведра. Сколько влить в котёл?",
+        "choices": [
+            {"text": "5 мл.",   "next": "brew_ryaska",
+            "gives": {"flags": {"added_water": True, "water_ml": 5},
+                    "inventory": {"water": -1}}},
+            {"text": "10 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_water": True, "water_ml": 10},
+                    "inventory": {"water": -1}}},
+            {"text": "20 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_water": True, "water_ml": 20},
+                    "inventory": {"water": -1}}},
+            {"text": "40 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_water": True, "water_ml": 40},
+                    "inventory": {"water": -1}}},
+            {"text": "50 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_water": True, "water_ml": 50},
+                    "inventory": {"water": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
+        ],
+    },
+
+    "post_swarm_water": {
+        "title": "Гнездо пиратов",
+        "text": "Вы отлили из стакана болотной жижи. Сколько влить в котёл?",
+        "choices": [
+            {"text": "5 мл.",   "next": "brew_ryaska",
+            "gives": {"flags": {"added_swarm_water": True, "swarm_water_ml": 5},
+                    "inventory": {"swarm_water": -1}}},
+            {"text": "10 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_swarm_water": True, "swarm_water_ml": 10},
+                    "inventory": {"swarm_water": -1}}},
+            {"text": "20 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_swarm_water": True, "swarm_water_ml": 20},
+                    "inventory": {"swarm_water": -1}}},
+            {"text": "40 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_swarm_water": True, "swarm_water_ml": 40},
+                    "inventory": {"swarm_water": -1}}},
+            {"text": "50 мл.",  "next": "brew_ryaska",
+            "gives": {"flags": {"added_swarm_water": True, "swarm_water_ml": 50},
+                    "inventory": {"swarm_water": -1}}},
+            {"text": "Передумать", "next": "brew_ryaska"},
         ],
     },
 
@@ -1239,7 +1560,19 @@ SCENES = {
 
     "katsap_room_mid": {
         "title": "Гнездо пиратов",
-        "text": "Кацап сидит на кровати, листает планшет. «Заходи. Как сам? Освоился?»",
+            "text": (
+            "Кацап сидел на кровати, развалившись на подушках, и вполглаза "
+            "листал планшет. На экране мелькали схемы, столбцы цифр и "
+            "знакомый логотип Дзухаллага. Услышав вас, он поднял голову — "
+            "без раздражения, но и без особой радости. "
+            "«Заходи. — Он отложил планшет экраном вниз. — Как сам? Освоился?» "
+            "Вы кивнули, но ответить толком не успели — Кацап уже "
+            "продолжил, будто сам с собой: «Тут один проект на днях "
+            "закроем. Хлопот много, а толку — сами увидите.» "
+            "Он потёр глаза и откинулся обратно на подушки. "
+            "«Ты не стой над душой. Скажи, чего надо — или иди, "
+            "дай отдохнуть.»"
+        ),
         "choices": [
             {"text": "Предложить съездить в бар", "next": "no_go_katsap_bar",
             "condition": {"flag_absent": "no_go_katsap_bar"},
@@ -1390,10 +1723,31 @@ SCENES = {
             "Если что нужно будет — заходи, не стесняйся. Для тебя у меня всегда время найдётся.\""
         ),
         "choices": [
+            {"text": "Что за секретный проект?",
+            "next": "asc_about_secret",
+            "condition": {"trust_at_least": {"name": "Kacap", "value": 80},
+                        "flag_absent": "asked_secret_project"},
+            "gives": {"flags": {"asked_secret_project": True}}},
+
             {"text": "Предложить съездить в бар", "next": "go_katsap_bar"},
             {"text": "Выйти из комнаты босса", "next": "corridor"},
         ],
     },
+
+    "asc_about_secret": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "Кацап оторвался от просмотра стереовизора. "
+            "- А... да, забыл... Сам видишь, сколько дел. Поедем сейчас и будем там весь день. "
+            "- Эмм. Куда поедем? - вы сделали вид, что ничего не знаете. "
+            "- Мы поедем на космодром сегодня, ты там освоишься немного, поможешь вечерком заткнуть одного слишком уж болтливого субъекта. Правда, после того, как он и еще пара специалистов устранят последние неполадки корабля. Кстати, увидишь нашу гордость - лучший корабль пиратского флота. "
+            "Кацап встал с кровати и, взяв бластер и некоторые другие вещи (в том числе и жучки), приказал следовать за ним."
+        ),
+        "choices": [
+            {"text": "Следовать за Кацапом", "next": "go_cosmodrom"},
+        ],
+    },
+
 
     "katsap_room_empty": {
         "title": "Гнездо пиратов",
@@ -1563,7 +1917,7 @@ SCENES = {
         ],
     },
 
-     "go_katsap_bar": {
+    "go_katsap_bar": {
         "title": "Гнездо пиратов",
         "text": (
             "- А почему бы и нет? - повеселел пеленг. - Идем. Я тут один бар неподалеку знаю - \"ТЮРЕМОК\" называется."
@@ -2134,36 +2488,57 @@ def visible_choices(scene: dict, state: dict) -> list[dict]:
         if condition is None:
             visible.append(choice)
             continue
-        else:
-            ok = True
-            for key, value in condition.items():
-                if key == "flag_absent":
-                    if state["flags"].get(value):
+
+        ok = True
+        for key, value in condition.items():
+            if key == "flag_absent":
+                if state["flags"].get(value):
+                    ok = False
+            elif key == "flag_present":
+                if not state["flags"].get(value):
+                    ok = False
+            elif key == "flags_all":
+                for name in value:
+                    if not state["flags"].get(name):
                         ok = False
-                elif key == "inventory_absent":
-                    if state["inventory"].get(value):
+                        break
+            elif key == "flags_exact":
+                for name, expected in value.items():
+                    if state["flags"].get(name) != expected:
                         ok = False
-                elif key == "money_at_least":
-                    if state["money"] < value: 
+                        break
+            elif key == "flags_not_exact":
+                all_match = True
+                for name, expected in value.items():
+                    if state["flags"].get(name) != expected:
+                        all_match = False
+                        break
+                if all_match:
+                    ok = False
+            elif key == "inventory_absent":
+                if state["inventory"].get(value):
+                    ok = False
+            elif key == "inventory_has_all":
+                for item in value:
+                    if not state["inventory"].get(item):
                         ok = False
-                elif key == "inventory_has_all":
-                    for item in value:                       # value — список предметов
-                        if not state["inventory"].get(item):
-                            ok = False
-                elif key == "flag_present":
-                    if not state["flags"].get(value):
-                        ok = False
-                elif key == "inventory_not_has_all":
-                    if all(state["inventory"].get(item) for item in value):
-                        ok = False
-                elif key == "trust_below":
-                    if state["trust"].get(value["name"], 0) >= value["value"]:
-                        ok = False
-                elif key == "trust_at_least":
-                    if state["trust"].get(value["name"], 0) < value["value"]:
-                        ok = False
-            if ok:
-                visible.append(choice)
+                        break
+            elif key == "inventory_not_has_all":
+                if all(state["inventory"].get(item) for item in value):
+                    ok = False
+            elif key == "money_at_least":
+                if state["money"] < value:
+                    ok = False
+            elif key == "trust_below":
+                if state["trust"].get(value["name"], 0) >= value["value"]:
+                    ok = False
+            elif key == "trust_at_least":
+                if state["trust"].get(value["name"], 0) < value["value"]:
+                    ok = False
+
+        if ok:
+            visible.append(choice)
+
     return visible
 
 def apply_effects(state: dict, gives: Optional[dict]) -> None:

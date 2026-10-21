@@ -53,12 +53,14 @@ ITEM_NAMES = {
     "photo": "Фотография с пеленгессами",
     "detonator": "Детонатор и взрывчатка",
     "card": "Магнитная карта к кладовке",
-    "boots": "Ботинки",
+    "boots": "Сапоги из мультипластика",
     "spirt": "99%-й спирт",
     "flowers" : "Болотные водоросли",
     "swarm_water" : "Болотная жижа",
     "water" : "Ведро воды",
     "sandy" : "Песок", 
+    "ryaska" : "Стакан Ряски",
+    "acid" : "Кислота"
 }
 
 @app.post("/start")
@@ -91,6 +93,40 @@ def index(request: Request):
         for item, count in STATE["inventory"].items()
     ]
 
+    flags = STATE["flags"]
+    brew_lines = []
+    total_ml = 0
+
+    if flags.get("added_sandy"):
+        brew_lines.append(f"Песка в напитке: {flags.get('sandy_g', 0)} г")
+
+    if flags.get("added_flowers"):
+        brew_lines.append(f"Водорослей в напитке: {flags.get('flowers_g', 0)} г")
+
+    if flags.get("added_acid"):
+        ml = flags.get("acid_ml", 0)
+        brew_lines.append(f"Кислоты в напитке: {ml} мл")
+        total_ml += ml
+
+    if flags.get("added_spirt"):
+        ml = flags.get("spirt_ml", 0)
+        brew_lines.append(f"Спирта в напитке: {ml} мл")
+        total_ml += ml
+
+    if flags.get("added_water"):
+        ml = flags.get("water_ml", 0)
+        brew_lines.append(f"Воды в напитке: {ml} мл")
+        total_ml += ml
+
+    if flags.get("added_swarm_water"):
+        ml = flags.get("swarm_water_ml", 0)
+        brew_lines.append(f"Болотной жижи: {ml} мл")
+        total_ml += ml
+
+    if brew_lines:
+        total_ml += flags.get("sandy_g", 0) + flags.get("flowers_g", 0)
+        brew_lines.append(f"Стакан заполнен на {total_ml} мл")
+
     return templates.TemplateResponse(
         "scene.html",
         {
@@ -100,8 +136,11 @@ def index(request: Request):
             "text": text,
             "choices": choices,
             "inventory_display": inventory_display,
+            "brew_lines": brew_lines,
         },
     )
+
+    
 
 @app.post("/choose")
 def choose(choice_index: int = Form(...)):
