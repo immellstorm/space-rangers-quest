@@ -39,7 +39,7 @@ DRINK_CHOICES = [
 ]
 
 KATSAP_QUESTION_CHOICES = [
-    {"text": "Расскажи о корабле", "next": "asc_about_ship", "condition": {"flag_absent": "asc_about_ship"}, "gives": {"flags": {"asc_about_ship": True}}},
+    {"text": "Расскажи о корабле", "next": "asc_about_ship_fatal", "condition": {"flag_absent": "asc_about_ship_fatal"}, "gives": {"flags": {"asc_about_ship_fatal": True}}},
     {"text": "На кого ты работаешь?","next": "asc_about_work","condition": {"flag_absent": "asc_about_work"},"gives": {
         "flags": {"asc_about_work": True},
         "trust": {"Kacap": -7},
@@ -92,6 +92,23 @@ SCENES = {
         ),
         "choices": [
             {"text": "Искать Русмана", "next": "rusman_talk"},
+        ],
+    },
+
+    "rejected": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "— Ну и дурак, — раздался в трубке голос заказчика. — Такие деньги "
+            "за простое дело, а он нос воротит. Пират, а туда же — совесть, "
+            "видите ли, у него проснулась.\n\n"
+            "В трубке щёлкнуло, и стало тихо. Вы отключили терминал, "
+            "звёздная карта на мониторе погасла, оставив после себя только "
+            "мягкое мерцание свободных секторов. Галактика большая — желающих "
+            "заработать на чужих проблемах всегда хватает. Но и вам скучать "
+            "не придётся: будет ещё заказ. Поинтереснее этого."
+        ),
+        "choices": [
+           {"text": "Вернуться к брифингу и перечитать условия", "next": "start"},
         ],
     },
 
@@ -906,17 +923,17 @@ SCENES = {
                 "- Я не \"зеленобрюхий\", а Комер Сан. Ты тут просто так ошиваешься или по делу? Хочешь в кладовку, плати 500 рублей или давай что то за вход.",
         "choices": [
             {"text": "Получи свои 500 рублей, жадина!", "next": "post_500_rub",
-            "condition": {"flag_absent": "post_500_rub"},
+            "condition": {"flag_absent": "post_500_rub", "money_at_least": 500},
             "gives": {"flags": {"post_500_rub": True}, "money": -500}},
             {"text":"Не собираюсь я платить тебе, ищи другого простака!", "next": "go_to_storeroom"},
             {
                 "text": "Показать карточку с пеленгессами",
                 "next": "set_photo_storeroom_peling",
-                "condition": {"flag_present": "get_photo", "flag_absent": "set_get_photo"},
+                "condition": {"inventory_has_all": ["photo"], "flag_absent": "set_photo_storeroom_peling"},
                 "gives": {
-                "inventory": {"photo": -1},
-                "flags": {"set_photo_storeroom_peling": True},
-                "trust": {"Kacap": -7}
+                    "inventory": {"photo": -1},
+                    "flags": {"set_photo_storeroom_peling": True},
+                    "trust": {"Kacap": -7}
                 }
             },
         ],
@@ -1727,7 +1744,7 @@ SCENES = {
             {
                 "text": "Отдать карточку с пеленгессами",
                 "next": "katsap_witsh_photo",
-                "condition": {"flag_present": "get_photo", "flag_absent": "set_get_photo"},
+                "condition": {"inventory_has_all": ["photo"], "flag_absent": "set_get_photo"},
                 "gives": {
                 "inventory": {"photo": -1},
                 "flags": {"set_get_photo": True},
@@ -1770,7 +1787,7 @@ SCENES = {
             {
                 "text": "Отдать карточку с пеленгессами",
                 "next": "katsap_witsh_photo",
-                "condition": {"flag_present": "get_photo", "flag_absent": "set_photo_storeroom_peling"},
+                "condition": {"inventory_has_all": ["photo"], "flag_absent": "set_get_photo"},
                 "gives": {
                 "inventory": {"photo": -1},
                 "flags": {"set_get_photo": True},
@@ -2031,32 +2048,40 @@ SCENES = {
 
     "bar_menu": {
         "title": "Гнездо пиратов",
-        "text": (...),
+        "text": (""
+                "Бармен указал на ряды бутылок. Вы присмотрели четыре вроде бы подходящие:"
+ 
+                "1) Пиво \"Махпельское темное (слабое спиртное)\""
+                "2) Втыкилла (умеренное)"
+                "3) Гуанава (очень сильное)"
+                "4) Малокское ядерное (ядерное)" 
+                
+                "Что будем брать?"),
         "choices": [
             {"text": "Купить \"Махпельское темное\" (75 рублей)",
             "next": "get_dark_drink",
-            "condition": {"flag_absent": "get_dark_drink"},
+            "condition": {"flag_absent": "get_dark_drink", "money_at_least": 75},
             "gives": {"flags": {"get_dark_drink": True},
                     "money": -75,
                     "inventory": {"dark_drink": 1}}},
 
             {"text": "Купить втыкиллы (150 рублей)",
             "next": "get_vtekilla",
-            "condition": {"flag_absent": "get_vtekilla"},
+            "condition": {"flag_absent": "get_vtekilla", "money_at_least": 150},
             "gives": {"flags": {"get_vtekilla": True},
                     "money": -150,
                     "inventory": {"vtekilla": 1}}},
 
             {"text": "Купить гуанавы (55 рублей)",
             "next": "get_guanava",
-            "condition": {"flag_absent": "get_guanava"},
+            "condition": {"flag_absent": "get_guanava",  "money_at_least": 55},
             "gives": {"flags": {"get_guanava": True},
                     "money": -55,
                     "inventory": {"guanava": 1}}},
 
             {"text": "Купить малокского ядерного (2 рубля)",
             "next": "get_nucker_malok",
-            "condition": {"flag_absent": "get_nucker_malok"},
+            "condition": {"flag_absent": "get_nucker_malok",  "money_at_least": 2},
             "gives": {"flags": {"get_nucker_malok": True},
                     "money": -2,
                     "inventory": {"nucker_malok": 1}}},
@@ -2073,16 +2098,16 @@ SCENES = {
         ),
         "choices": [
             {"text": "Да, вот стаканчик", "next": "katsap_drink_dark",
-            "condition": {"flag_present": "get_dark_drink"},
+            "condition": {"inventory_has_all": ["dark_drink"]}, 
             "gives": {"inventory": {"dark_drink": -1}}},
             {"text": "Да, вот стаканчик", "next": "katsap_drink_vtekilla",
-            "condition": {"flag_present": "get_vtekilla"},
+            "condition": {"inventory_has_all": ["vtekilla"]},   
             "gives": {"inventory": {"vtekilla": -1}}},
             {"text": "Да, вот стаканчик", "next": "katsap_drink_guanava",
-            "condition": {"flag_present": "get_guanava"},
+            "condition": {"inventory_has_all": ["guanava"]},    
             "gives": {"inventory": {"guanava": -1}}},
             {"text": "Да, вот стаканчик", "next": "katsap_drink_nucker_malok",
-            "condition": {"flag_present": "get_nucker_malok"},
+            "condition": {"inventory_has_all": ["nucker_malok"]},
             "gives": {"inventory": {"nucker_malok": -1}}},
             {"text": "Сейчас, подожди минутку", "next": "katsap_bar"},
             {"text": "Едем домой, у меня нет денег", "next": "bar_no_money", "gives": {"trust": {"Kacap": -15}}},
@@ -2133,12 +2158,12 @@ SCENES = {
             {"text": "Ты мне что-нибудь расскажи", "next": "katsap_bad_request",
             "condition": {"flag_absent": "katsap_bad_request"},
             "gives": {"flags": {"katsap_bad_request": True}, "trust": {"Kacap": -5}}},
-            {"text": "Давай поговорим о жизни", "next": "katsap_mid_request",
-            "condition": {"flag_absent": "katsap_mid_request"},
-            "gives": {"flags": {"katsap_mid_request": True}, "trust": {"Kacap": +5}}},
-            {"text": "Как дела, Кацап?", "next": "katsap_low_request",
-            "condition": {"flag_absent": "katsap_low_request"},
-            "gives": {"flags": {"katsap_low_request": True}, "trust": {"Kacap": +1}}},
+            {"text": "Давай поговорим о жизни", "next": "asc_about_live",
+            "condition": {"flag_absent": "asc_about_live"},
+            "gives": {"flags": {"asc_about_live": True}, "trust": {"Kacap": +5}}},
+            {"text": "Как дела, Кацап?", "next": "asc_about_ship",
+            "condition": {"flag_absent": "asc_about_ship"},
+            "gives": {"flags": {"asc_about_ship": True}, "trust": {"Kacap": +1}}},
             {"text": " А что тебе рассказать?", "next": "katsap_bad_two_request",
             "condition": {"flag_absent": "katsap_bad_two_request"},
             "gives": {"flags": {"katsap_bad_two_request": True}, "trust": {"Kacap": -5}}},
@@ -2157,25 +2182,7 @@ SCENES = {
             {"text": " Ну... давай о жизни поговорим", "next": "asc_about_live",
             "condition": {"flag_absent": "asc_about_live"},
             "gives": {"flags": {"asc_about_live": True}, "trust": {"Kacap": +5}}},
-            {"text": "Давай о малоках", "next": "asc_about_malok",
-            "condition": {"flag_absent": "asc_about_malok"},
-            "gives": {"flags": {"asc_about_malok": True}, "trust": {"Kacap": +3}}},
-        ],
-    },
-
-    "katsap_bad_request": {
-        "title": "Гнездо пиратов",
-        "text": (
-            " - Пеленг с недоумением уставился на вас. "
-            "- Ты меня в бар... это... привел, а теперь... ну... тему для разговора... придумывать заставляешь?!"
-        ),
-        "choices": [
-            {"text": "Давай о корабле поговорим", "next": "asc_about_ship",
-            "condition": {"flag_absent": "asc_about_ship"},
-            "gives": {"flags": {"asc_about_ship": True}, "trust": {"Kacap": -5}}},
-            {"text": " Ну... давай о жизни поговорим", "next": "asc_about_live",
-            "condition": {"flag_absent": "asc_about_live"},
-            "gives": {"flags": {"asc_about_live": True}, "trust": {"Kacap": +5}}},
+            {"text": "Ладно, что-то я заболтался. Наливай ещё", "next": "go_barman"},
         ],
     },
 
@@ -2196,6 +2203,28 @@ SCENES = {
         ],
     },
 
+    "like_malock": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "  Лицо Кацапа исказилось в злобе. "
+            "- А я нет!!! Терпеть не могу эти мешки с мускулами! Такие уж неповоротливые. Да ты видел дверь этого идиота Громиллы в... этом... особняке?! Проломана насквозь!!! Ладно, неважно. Вообще, ты какой организации большее предпочтение отдаешь?"
+        ),
+        "choices": [
+            {"text": "Мне нравятся гаальские спецслужбы", "next": "like_gaal",
+            "condition": {"flag_absent": "like_gaal"},
+            "gives": {"flags": {"like_gaal": True}, "trust": {"Kacap": -13}}},
+            {"text": " У меня нет любимой организации", "next": "no_like_any",
+            "condition": {"flag_absent": "no_like_any"},
+            "gives": {"flags": {"no_like_any": True}, "trust": {"Kacap": -3}}},
+            {"text": "Обожаю Дзухаллаг!", "next": "like_duzlak",
+            "condition": {"flag_absent": "like_duzlak"},
+            "gives": {"flags": {"like_duzlak": True}, "trust": {"Kacap": +7}}},
+            {"text": " I love Greenpeace!", "next": "greenpeace",
+            "condition": {"flag_absent": "greenpeace"},
+            "gives": {"flags": {"greenpeace": True}, "trust": {"Kacap": -13}}},
+        ],
+    },
+
     "hate_malock": {
         "title": "Гнездо пиратов",
         "text": (
@@ -2213,8 +2242,8 @@ SCENES = {
             "condition": {"flag_absent": "like_duzlak"},
             "gives": {"flags": {"like_duzlak": True}, "trust": {"Kacap": +7}}},
             {"text": " I love Greenpeace!", "next": "greenpeace",
-            "condition": {"flag_absent": "hate_malock"},
-            "gives": {"flags": {"hate_malock": True}, "trust": {"Kacap": -13}}},
+            "condition": {"flag_absent": "greenpeace"},
+            "gives": {"flags": {"greenpeace": True}, "trust": {"Kacap": -13}}},
         ],
     },
 
@@ -2224,13 +2253,34 @@ SCENES = {
             " - Ааааааа! Ненавижу их! Заткнись ты! Кстати, ты на Дзухаллаг работать не хочешь?!"
         ),
          "choices": [
-            {"text": " Конечно, хочу!?", "next": "katsap_no_more_say",
+            {"text": "Конечно, хочу!?", "next": "katsap_no_more_say",
             "condition": {"flag_absent": "asc_about_dzuch"},
             "gives": {"flags": {"asc_about_dzuch": True}, "trust": {"Kacap": +3}}},  
             {"text": "Нет, не хочу", "next": "exit_asc_katsap",
             "condition": {"flag_absent": "exit_asc_katsap"},
             "gives": {"flags": {"exit_asc_katsap": True}, "trust": {"Kacap": -8}}},  
         ],
+    },
+
+    "exit_asc_katsap": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "— Нет, не хочу, — твёрдо сказали вы.\n\n"
+            "Кацап на секунду замер, словно пытаясь осмыслить услышанное. "
+            "Потом лицо его расплылось в пьяной ухмылке.\n"
+            "— Ага… ну да… все так говорят, — протянул он, явно не расслышав "
+            "или не пожелав расслышать. — Скромничаешь, братан! Уважаю. "
+            "Настоящий пират сначала поломается, а потом всё равно согласится. "
+            "Хе-хе…\n\n"
+            "Он хлопнул вас по плечу так, что вы едва не присели, и поднял "
+            "очередной стакан.\n"
+            "— Так что давай, за знакомство! А потом я тебя, это… "
+            "отвезу куда надо. На месте всё покажу. Там такое увидишь — "
+            "закачаешься!\n\n"
+            "Спорить с пьяным пеленгом, который уже всё решил за вас, "
+            "было бесполезно."
+        ),
+        "choices": [{"text": "Чокнуться с Кацапом", "next": "katsap_no_more_say"}],
     },
 
     "no_like_any": {
@@ -2289,11 +2339,14 @@ SCENES = {
         ),
         "choices": [
             {"text": "О! Хорошая тема! Давай о жизни поговорим", "next": "asc_about_live",
-            "condition": {"flag_absent": "asc_about_live"},
-            "gives": {"flags": {"asc_about_live": True}, "trust": {"Kacap": +5}}},
+            "condition": {"flag_absent": "asc_about_live"},                
+            "gives": {"flags": {"asc_about_live": True},
+                    "trust": {"Kacap": +5}}},
             {"text": " А что за корабль?", "next": "no_sey_about_ship",
             "condition": {"flag_absent": "no_sey_about_ship"},
-            "gives": {"flags": {"no_sey_about_ship": True}, "trust": {"Kacap": -5}}},
+            "gives": {"flags": {"no_sey_about_ship": True},
+                    "trust": {"Kacap": -5}}},
+            {"text": "Ладно, хватит о кораблях. Давай о другом", "next": "why_this_bar"},  
         ],
     },
 
@@ -2330,16 +2383,29 @@ SCENES = {
         ],
     },
 
+    "asc_about_family": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "- Да... в доме моем ничего интересного... вот... на планете Рахиш жил в грязной прогнившей хижине на болоте Цаввацах... это близ... этой.... как там ее... Марринианского горного хребта... самого высокого на... этой... как там ее... планете... Мой отец к четвертому периоду моего возраста... сидел в тюрьме... за контрабанду и пиратство в гаальских системах... я его уже почти не помню... слышал от друзей... что он... умер там недавно... ужас... а еще говорят... что гаальцы самые добрые, милосердные и... да какая разница! Хуже малоков!.. ладно, ну их к Махпелле... о чем я говорил?.. да, вспомнил... мать моя... забыл ее уже... а сестрица полетела пиратствовать в пеленгско-гаальской системе... вот. Я помню, встретил ее в той системе, а она: \"Плати за проезд, не то разнесу в клочья!\" - потом узнала меня и скидку за проезд процентов на пять сделала... вместо трех тысяч пришлось платить две восемьсот пятьдесят... вот нахалка! Я как разберусь с запуском... так саму ее разведу на бабки... - Кацап улыбнулся."
+        ),
+        "choices": [
+            {"text": "С каким запуском ты разберешься?", "next": "asc_about_ship",
+            "condition": {"flag_absent": "family_ship_shown"},
+            "gives": {"flags": {"family_ship_shown": True}, "trust": {"Kacap": -5}}},
+        ],
+    },
+
     "asc_about_pirat_style": {
         "title": "Гнездо пиратов",
         "text": (
             "  - Ай... - поник Кацап, - помню, как решил стать пиратом... мой дом был - гнилое болото, сейчас у меня... на Рахише есть красивый особнячок... там мы поженимся с моей луноликой красавицей... А пиратом стал из-за родни... помню, когда был еще маленьким пеленгошей, любил подбирать разных рахишианских жучков и червяков, но не есть их, а внимательно рассматривать... интересно они выглядели... но моя родня... такого подхода не оценила и отругала, даже побила за то, что... как фэянин, говорили..."
         ),
         "choices": [
-            {"text": "И?", "next": "asc_about_pirat_style_more",
-            "condition": {"flag_absent": "asc_about_pirat_style"},
-            "gives": {"flags": {"asc_about_pirat_style": True}, "trust": {"Kacap": +1}}},  
-        ],
+        {"text": "И?", "next": "asc_about_pirat_style_more",
+        "condition": {"flag_absent": "pirat_style_more_shown"},  
+        "gives": {"flags": {"pirat_style_more_shown": True},
+        "trust": {"Kacap": +1}}},
+    ]
     },
 
     "asc_about_pirat_style_more": {
@@ -2360,7 +2426,6 @@ SCENES = {
     "katsap_no_more_say": {
         "title": "Гнездо пиратов",
         "text": (
-            "  Кацап обрадовался вашему ответу."
             " - Отлично... Я как приедем, свожу в космопорт... Привезу..."
             "Пеленг окончательно потерял ориентацию в пространстве и смотрел куда-то влево вверх."
         ),
@@ -2487,7 +2552,7 @@ SCENES = {
             {"text": "Агент планеты Окошки Виста - Русман", "next": "sey_about_rusman",
             "condition": {"flag_absent": "sey_about_rusman"},
             "gives": {"flags": {"sey_about_rusman": True}, "trust": {"Kacap": -7}}},
-            {"text": "Никто, вот стаканчик", "next": "get_new_drink"},
+            {"text": "Никто, вот стаканчик", "next": "go_barman"},
         ],
     },
 
@@ -2498,7 +2563,7 @@ SCENES = {
             "- А... - весело сказал он, - ну передай ему... это... привет от меня... хе-хе... ненавижу этого агента..."
         ),
         "choices": [
-            {"text": "Давай вернемся к нашему разговору", "next": "sey_about_rusman"},
+           {"text": "Давай вернемся к нашему разговору", "next": "why_this_bar"}, 
         ],
     },
 
@@ -2522,11 +2587,11 @@ SCENES = {
             "опустошил стакан с малокским ядерным."
         ),
         "choices": [
-            {"text": "Ждать", "next": "kill_katsap_ucker_malok"},
+            {"text": "Ждать", "next": "kill_katsap_nucker_malok"},
         ],
     },
 
-    "katsap_drink_nucker_malok": {
+    "kill_katsap_nucker_malok": {
         "title": "Гнездо пиратов",
         "text": (
             "Похоже, малокское ядерное и было самым натуральным малокским ядерным. Малоки никогда не врут с названиями. "
@@ -2612,7 +2677,7 @@ SCENES = {
     },
 
 
-    "asc_about_ship": {
+    "asc_about_ship_fatal": {
         "title": "Гнездо пиратов",
         "text": (
             "- О каком корабле? - переполошился пеленг. - Я про корабль вообще не упоминал! А-А-А!!! Шпион проклятый, сам себя выдал!!! Держи его, вали!!! "
@@ -2749,7 +2814,6 @@ SCENES = {
         "text": (
             "На экране возник виртуальный образ Русмана: взлохмаченные волосы, неясный взгляд, небритое лицо. Видимо, все это надо для маскировки. "
             "Не знай вы Русмана, подумали бы, что это бомж. "
-            "\"- Привет,{player_name}, ты еще жив? Это хорошо, хе-хе, - вы не оценили шутки человека. - Напоминаю, осталось {days} дня до запуска корабля. Поторопись! У тебя есть какие-то вопросы? \""
         ),
         "choices": [
             {"text": "Очень важная информация, Русман! Я знаю, где пеленгский космодром с кораблем", "next": "say_about_cosmodrome",
@@ -2758,6 +2822,145 @@ SCENES = {
             {"text": "Повтори задание", "next": "repid_job"},
             {"text": "Как завоевать доверие Кацапа?", "next": "repid_trust_katsap"},
             {"text": "Все отлично, я связался для проверки связи", "next": "my_room"},
+        ]
+    },
+
+    "say_about_cosmodrome": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " Русман аж подпрыгнул на месте от такого неожиданного известия:"
+            "- И где же??? Колись, {player_name}! Чем точнее расскажешь, тем выше шанс найти тебя после завершения задания. Сначала скажи, на каком материке находится космодром?"
+        ),
+        "choices": [
+            {"text": "На первом материке, это тот, где я сейчас нахожусь", "next": "first_materick"},
+            {"text": "На втором материке, он как раз необитаем, если не считать складов ядерных боеприпасов планеты Полуось", "next": "second_materick"},
+            {"text": "На северном полюсе этой луны, где обитают морские бугрики и снежные слизни", "next": "three_materick"},
+        ]
+    },
+
+    "need_object": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " - Отлично, {player_name}, в таком случае, мы запросто вытащим тебя оттуда. Возле космодрома были какие-нибудь признаки цивилизации?"
+        ),
+      "choices": [
+            {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки ",
+            "next": "only_dots",
+            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            {"text": "Я знаю, что возле космодрома были склады ядерных ракет планеты Полуось",
+            "next": "nucker_rokets",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Я знаю, что возле космодрома были военные объекты планеты Полуось",
+            "next": "war_objects",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Никаких признаков цивилизации возле космодрома нет",
+            "next": "no_objects",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+        ]
+    },
+
+    "no_objects": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "  - Понятно, - протянул Русман, - что-нибудь еще?"
+        ),
+        "choices": [
+            {"text": "Нет, больше ничего не припоминаю",
+            "next": "need_more_info_cosmo"},
+        ]
+    },
+
+    "only_dots": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " - Учтем! - коротко ответил Русман. - Спасибо за информацию, {player_name}"
+        ),
+        "choices": [
+            {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки",
+            "next": "need_more_info_cosmo",
+            "gives": {"flags": {"cosmo_intel_ok": True}}}, 
+        ]
+    },
+
+    "nucker_rokets": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " - Вот блин! - ругнулся Русман. - А еще эти чиновники выступали за глобальное ядерно-ионное разоружение. Смех, да и только!"
+        ),
+        "choices": [
+            {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки", "next": "need_more_info_cosmo"},
+        ]
+    },
+
+    "war_objects": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " - Вот блин! - ругнулся Русман. - А еще эти чиновники выступали за пацифизм. Смех, да и только!"
+        ),
+        "choices": [
+            {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки", "next": "need_more_info_cosmo"},
+        ]
+    },
+
+    "need_more_info_cosmo": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " - Рейнджер, попытайся разузнать о космодроме побольше, ладно? Надеюсь, мы легко найдем тебя, но все же командование требует информацию, а я, как видишь, еще и не брался."
+        ),
+        "choices": [
+            {"text": "Постараюсь разузнать что-нибудь еще", "next": "call_rusman"},
+        ]
+    },
+    
+    "first_materick": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "  Русман удивился:"
+            " Но ведь тут и крупный город Агро-Сити, и земледельческие поля, и радары, да мало ли чего еще. Странно. Надеюсь, ты прав. Теперь скажи, где он уже на этом континенте находится? Ну, там, в горах или еще где-то?"
+        ),
+        "choices": [
+            {"text": "Космодром находится рядом с крупнейшей рекой этой луны - Нейле, в ее дельте",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            {"text": "Кацап говорил, что космодром находится под одной из оранжевых равнин, а точнее, под Великой Лунной Равниной",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            {"text": "Я не знаю особенностей географического положения космодрома",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_ok": True}}},
+        ]
+    },
+
+    "second_materick": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "- Хм... - призадумался Русман, - вполне возможно. Тем более что на второй материк нога человека не ступала со времен колонизации этой луны. Теперь скажи, где он уже на этом континенте находится? Ну, там, в горах или еще где-то?"
+        ),
+        "choices": [
+            {"text": "Космодром находится рядом с крупнейшей рекой этой луны - Нейле, в ее дельте",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Кацап говорил, что космодром находится под одной из оранжевых равнин, а точнее, под Великой Лунной Равниной",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Я не знаю особенностей географического положения космодрома",
+            "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+        ]
+    },
+
+    "three_materick": {
+        "title": "Гнездо пиратов",
+        "text": (
+            "- Что?! - взревел Русман. - Да наш флаер рухнет камнем на землю, как только 60-е широты пересечем! Ты, наверное, ошибся. Попробуй вспомнить получше."
+        ),
+        "choices": [
+            {"text": "Я ошибся, на первом континенте", "next": "first_materick",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Если честно, космодром на втором континенте", "next": "second_materick",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
+            {"text": "Да нет! Я точно помню, что на полюсе", "next": "need_object",
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
         ]
     },
 
