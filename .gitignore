@@ -1,4 +1,4 @@
-# === Python ===
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -9,13 +9,12 @@ dist/
 *.egg-info/
 .eggs/
 
-# === Виртуальные окружения ===
 venv/
 .venv/
 env/
 ENV/
 
-# === Тесты и покрытие ===
+
 .pytest_cache/
 .coverage
 .coverage.*
@@ -24,30 +23,28 @@ coverage.xml
 *.cover
 .tox/
 
-# === Playwright ===
+
 test-results/
 playwright-report/
 screenshots/
 videos/
 *.webm
 
-# === База данных ===
 *.db
 *.sqlite
 *.sqlite3
 
-# === IDE ===
+
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# === macOS ===
 .DS_Store
 ._*
 
-# === Логи и временные файлы ===
 *.log
 *.tmp
 .env
 .env.local
+*.pyc

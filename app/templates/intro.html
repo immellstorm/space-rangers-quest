@@ -5,12 +5,29 @@
 <div class="layout intro-layout">
 
     <div class="main-col">
+
+        <div class="block auth-bar">
+            <span class="corner tl"></span>
+            <span class="corner tr"></span>
+            <span class="corner bl"></span>
+            <span class="corner br"></span>
+            <p class="auth-line">
+                Вы вошли как <strong>{{ username }}</strong>
+            <form method="post" action="/logout" class="inline-form">
+                <button type="submit" class="link-btn">сменить</button>
+            </form>
+            </p>
+        </div>
+
         <div class="block">
             <span class="corner tl"></span>
             <span class="corner tr"></span>
             <span class="corner bl"></span>
             <span class="corner br"></span>
-            <p id="intro-text">Представься, рейнджер. Как к тебе обращаться?</p>
+            <p id="intro-text">
+                Привет, рейнджер.<br>
+                Как назвать твоего героя?
+            </p>
         </div>
 
         <div class="block">
@@ -19,21 +36,12 @@
             <span class="corner bl"></span>
             <span class="corner br"></span>
             <form id="intro-form" method="post" action="/start">
-                <input type="text" name="player_name" required maxlength="20" placeholder="Имя" id="player-name-input">
-                <button type="submit">Начать</button>
+                <input type="text" name="player_name" required maxlength="20" value="{{ username }}"
+                    placeholder="Имя героя" id="player-name-input">
+                <button type="submit">Начать приключение</button>
             </form>
         </div>
+
     </div>
-
-    <aside class="side-col">
-        <div class="block" id="scene-image">
-            <span class="corner tl"></span>
-            <span class="corner tr"></span>
-            <span class="corner bl"></span>
-            <span class="corner br"></span>
-            <img src="/static/images/your_name.jpeg" alt="new">
-        </div>
-    </aside>
-
 </div>
 {% endblock %}

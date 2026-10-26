@@ -1,5 +1,6 @@
-# app/images.py
+from pathlib import Path
 
+STATIC_IMAGES = Path(__file__).resolve().parent / "static" / "images"
 DEFAULT_IMAGE = "your_name.jpeg"
 
 SCENE_IMAGES = {
@@ -282,12 +283,17 @@ SCENE_IMAGES = {
     "base_angar_say_kill_katsap": "base_angar.png",
     "base_angar_go_ship": "base_angar.png",
     "base_set_boombs": "base_angar.png",
-
-    "mission_escape": "base_angar.png",
+    "rejected" : "your_name.jpeg",
+    "mission_escape" : "base_angar.png",
 }
 
 def get_scene_image(scene_name: str) -> str:
-    if scene_name in SCENE_IMAGES:
-        return SCENE_IMAGES[scene_name]
-    
-    return f"{scene_name}.png"
+    candidate = SCENE_IMAGES.get(scene_name, f"{scene_name}.png")
+
+    if (STATIC_IMAGES / candidate).is_file():
+        return candidate
+
+    if (STATIC_IMAGES / DEFAULT_IMAGE).is_file():
+        return DEFAULT_IMAGE
+
+    return ""

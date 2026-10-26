@@ -1,37 +1,35 @@
+import os
 from pathlib import Path
 
+from fastapi import FastAPI, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi import FastAPI, Form, Request, HTTPException
-from app.images import get_scene_image 
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.images import get_scene_image
 from app.scenes import (
-    SCENES,
-    get_scene,
-    make_choice,
-    visible_choices,
-    apply_effects,
+    SCENES, get_scene, make_choice, visible_choices, apply_effects,
 )
+from app.auth import init_db, login_or_create
+from app.sessions import load_state, save_state, reset_state
 
 BASE_DIR = Path(__file__).resolve().parent
 
+SECRET_KEY = os.getenv("KR_SECRET_KEY", "dev-only-change-me")
+IS_PROD = os.getenv("KR_ENV", "dev") == "prod"
+
 app = FastAPI(title="Космические квесты")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    max_age=60 * 60 * 24 * 30,
+    https_only=IS_PROD,
+)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-
-STATE = {
-    "player_name": "",
-    "current_scene": "start",
-    "money": 0,
-    "relations": {},
-    "history": [],
-    "inventory": {},
-    "trust": {},
-    "flags": {}, 
-    "days": 0,   
-}
+init_db()
 
 QUESTS = [
     {
@@ -43,26 +41,14 @@ QUESTS = [
 ]
 
 ITEM_NAMES = {
-    "droid": "Дроид",
-    "drill": "Бур",
-    "pickaxe": "Кирка",
-    "bomb": "Бомба",
-    "timer": "Таймер",
-    "detonator": "Детонатор",
-    "explosive": "Взрывчатка",
-    "photo": "Фотография с пеленгессами",
-    "card": "Магнитная карта к кладовке",
-    "boots": "Сапоги из мультипластика",
-    "spirt": "99%-й спирт",
-    "flowers" : "Болотные водоросли",
-    "swarm_water" : "Болотная жижа",
-    "water" : "Ведро воды",
-    "sandy" : "Песок", 
-    "ryaska" : "Стакан Ряски",
-    "acid" : "Кислота",
-    "dark_drink": "Пиво «Махпельское тёмное»",
-    "vtekilla": "Бутылка втыкиллы",
-    "guanava": "Бутылка гуанавы",
+    "droid": "Дроид", "drill": "Бур", "pickaxe": "Кирка", "bomb": "Бомба",
+    "timer": "Таймер", "detonator": "Детонатор", "explosive": "Взрывчатка",
+    "photo": "Фотография с пеленгессами", "card": "Магнитная карта к кладовке",
+    "boots": "Сапоги из мультипластика", "spirt": "99%-й спирт",
+    "flowers": "Болотные водоросли", "swarm_water": "Болотная жижа",
+    "water": "Ведро воды", "sandy": "Песок", "ryaska": "Стакан Ряски",
+    "acid": "Кислота", "dark_drink": "Пиво «Махпельское тёмное»",
+    "vtekilla": "Бутылка втыкиллы", "guanava": "Бутылка гуанавы",
     "nucker_malok": "Банка малокского ядерного",
     "access_card_special": "Карта допуска на спецуровень",
 }
@@ -75,163 +61,199 @@ FINAL_SCENES = {
     "mission_end_timeout",
 }
 
-def _reset_state() -> None:
-    STATE.update({
-        "player_name": "",
-        "current_scene": "start",
-        "money": 0,
-        "relations": {},
-        "history": [],
-        "inventory": {},
-        "trust": {},
-        "flags": {},
-        "days": 0,
+@app.get("/login", response_class=HTMLResponse)
+def login_form(request: Request):
+    if request.session.get("user_id"):
+        return RedirectResponse("/", status_code=303)
+    return templates.TemplateResponse("auth.html", {
+        "request": request, "error": None,
     })
 
-@app.post("/start")
-def start(player_name: str = Form(...)):
-    _reset_state()
-    STATE["player_name"] = player_name.strip() or "Рейнджер"
-    return RedirectResponse("/quests", status_code=303)
 
-@app.post("/reset")
-def reset():
-    _reset_state()
+@app.post("/login", response_class=HTMLResponse)
+def login_submit(request: Request, username: str = Form(...)):
+    user_id = login_or_create(username)
+    if user_id is None:
+        return templates.TemplateResponse("auth.html", {
+            "request": request,
+            "error": "Имя должно быть от 3 до 32 символов",
+        }, status_code=400)
+    request.session["user_id"] = user_id
     return RedirectResponse("/", status_code=303)
+
+
+@app.post("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login", status_code=303)
+
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    if not STATE["player_name"]:
-        return templates.TemplateResponse("intro.html", {"request": request})
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
 
-    if "quest_id" not in STATE["flags"]:
+    state = load_state(user_id)
+
+    if not state["player_name"]:
+        return templates.TemplateResponse("intro.html", {
+            "request": request,
+            "username": _get_username(user_id),
+        })
+
+    if "quest_id" not in state["flags"]:
         return RedirectResponse("/quests", status_code=303)
 
-    if (STATE["flags"].get("timer_started")
-            and STATE["days"] <= 0
-            and STATE["current_scene"] not in FINAL_SCENES
-            and STATE["current_scene"] != "go_sleep"):
-        STATE["current_scene"] = "mission_end_timeout"
+    if (
+        state["flags"].get("timer_started")
+        and state["days"] <= 0
+        and state["current_scene"] not in FINAL_SCENES
+        and state["current_scene"] != "go_sleep"
+    ):
+        state["current_scene"] = "mission_end_timeout"
+        save_state(user_id, state)
 
-    scene = get_scene(STATE["current_scene"])
-
+    scene = get_scene(state["current_scene"])
     text = scene["text"].format(
-        player_name=STATE["player_name"],
-        days=STATE["days"],
-        money=STATE["money"],
+        player_name=state["player_name"],
+        days=state["days"],
+        money=state["money"],
     )
-
     choices = [
-        {**c, "text": c["text"].format(player_name=STATE["player_name"])}
-        for c in visible_choices(scene, STATE)
+        {**c, "text": c["text"].format(player_name=state["player_name"])}
+        for c in visible_choices(scene, state)
     ]
-
     inventory_display = [
         {"name": ITEM_NAMES.get(item, item), "count": count}
-        for item, count in STATE["inventory"].items()
+        for item, count in state["inventory"].items()
     ]
 
-    flags = STATE["flags"]
-    brew_lines = []
-    total_ml = 0
-
+    flags = state["flags"]
+    brew_lines, total_ml = [], 0
     if flags.get("added_sandy"):
         brew_lines.append(f"Песка в напитке: {flags.get('sandy_g', 0)} г")
-
     if flags.get("added_flowers"):
         brew_lines.append(f"Водорослей в напитке: {flags.get('flowers_g', 0)} г")
-
     if flags.get("added_acid"):
         ml = flags.get("acid_ml", 0)
         brew_lines.append(f"Кислоты в напитке: {ml} мл")
         total_ml += ml
-
     if flags.get("added_spirt"):
         ml = flags.get("spirt_ml", 0)
         brew_lines.append(f"Спирта в напитке: {ml} мл")
         total_ml += ml
-
     if flags.get("added_water"):
         ml = flags.get("water_ml", 0)
         brew_lines.append(f"Воды в напитке: {ml} мл")
         total_ml += ml
-
     if flags.get("added_swarm_water"):
         ml = flags.get("swarm_water_ml", 0)
         brew_lines.append(f"Болотной жижи: {ml} мл")
         total_ml += ml
-
     if brew_lines:
         total_ml += flags.get("sandy_g", 0) + flags.get("flowers_g", 0)
         brew_lines.append(f"Стакан заполнен на {total_ml} мл")
 
-    return templates.TemplateResponse(
-        "scene.html",
-        {
-            "request": request,
-            "scene": scene,
-            "state": STATE,
-            "text": text,
-            "choices": choices,
-            "inventory_display": inventory_display,
-            "brew_lines": brew_lines,
-            "scene_image": get_scene_image(STATE["current_scene"]),
-        },
-    )
+    return templates.TemplateResponse("scene.html", {
+        "request": request, "scene": scene, "state": state,
+        "text": text, "choices": choices,
+        "inventory_display": inventory_display,
+        "brew_lines": brew_lines,
+        "scene_image": get_scene_image(state["current_scene"]),
+        "username": _get_username(user_id),
+    })
 
-    
+
+@app.post("/start")
+def start(request: Request, player_name: str = Form(...)):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
+    state = load_state(user_id)
+    state["player_name"] = player_name.strip() or "Рейнджер"
+    save_state(user_id, state)
+    return RedirectResponse("/quests", status_code=303)
+
 
 @app.post("/choose")
-def choose(choice_index: int = Form(...)):
-    if (STATE["flags"].get("timer_started")
-            and STATE["days"] <= 0
-            and STATE["current_scene"] not in FINAL_SCENES
-            and STATE["current_scene"] != "go_sleep"):
-        STATE["current_scene"] = "mission_end_timeout"
+def choose(request: Request, choice_index: int = Form(...)):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
+
+    state = load_state(user_id)
+
+    if (
+        state["flags"].get("timer_started")
+        and state["days"] <= 0
+        and state["current_scene"] not in FINAL_SCENES
+        and state["current_scene"] != "go_sleep"
+    ):
+        state["current_scene"] = "mission_end_timeout"
+        save_state(user_id, state)
         return RedirectResponse("/", status_code=303)
-    
-    next_scene, choice = make_choice(STATE["current_scene"], choice_index, STATE)
-    apply_effects(STATE, choice.get("gives"))  
 
-    STATE["history"].append(STATE["current_scene"])
-    STATE["current_scene"] = next_scene
-
+    next_scene, choice = make_choice(
+        state["current_scene"], choice_index, state
+    )
+    apply_effects(state, choice.get("gives"))
+    state["history"].append(state["current_scene"])
+    state["current_scene"] = next_scene
+    save_state(user_id, state)
     return RedirectResponse("/", status_code=303)
+
 
 @app.get("/quests", response_class=HTMLResponse)
 def quests_list(request: Request):
-    if not STATE["player_name"]:
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
+    state = load_state(user_id)
+    if not state["player_name"]:
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse(
-        "quests.html",
-        {"request": request, "state": STATE, "quests": QUESTS},
-    )
+    return templates.TemplateResponse("quests.html", {
+        "request": request, "state": state, "quests": QUESTS,
+    })
 
 
 @app.post("/quests/select")
-def quests_select(quest_id: str = Form(...)):
+def quests_select(request: Request, quest_id: str = Form(...)):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
     quest = next((q for q in QUESTS if q["id"] == quest_id), None)
     if quest is None:
         raise HTTPException(status_code=404, detail="Квест не найден")
-    STATE["current_scene"] = quest["start_scene"]
-    STATE["flags"]["quest_id"] = quest_id
+    state = load_state(user_id)
+    state["current_scene"] = quest["start_scene"]
+    state["flags"]["quest_id"] = quest_id
+    save_state(user_id, state)
     return RedirectResponse("/", status_code=303)
 
 
 @app.post("/reset")
-def reset():
-    STATE["player_name"] = ""
-    STATE["current_scene"] = "start"
-    STATE["money"] = 0
-    STATE["relations"] = {}
-    STATE["history"] = []
-    STATE["inventory"] = {}
-    STATE["trust"] = {}
-    STATE["flags"] = {}
-    STATE["days"] = 0
+def reset(request: Request):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        return RedirectResponse("/login", status_code=303)
+    reset_state(user_id)
     return RedirectResponse("/", status_code=303)
 
 
 @app.get("/api/state")
-def api_state():
-    return STATE
+def api_state(request: Request):
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+    return load_state(user_id)
+
+
+def _get_username(user_id: int) -> str:
+    """Короткий хелпер: вытащить имя из users для отображения."""
+    from app.auth import connect
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT username FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    return row["username"] if row else "Рейнджер"

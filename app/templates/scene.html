@@ -19,8 +19,11 @@
         <span class="corner tr"></span>
         <span class="corner bl"></span>
         <span class="corner br"></span>
-        <img src="/static/images/{{ scene_image }}" alt="{{ scene.title }}"
-            onerror="this.src='/static/images/your_name.jpg'">
+        {% if scene_image %}
+        <img src="/static/images/{{ scene_image }}" alt="{{ scene.title }}">
+        {% else %}
+        <div class="image-placeholder">{{ scene.title }}</div>
+        {% endif %}
     </div>
 
     <div class="block choices-block">
