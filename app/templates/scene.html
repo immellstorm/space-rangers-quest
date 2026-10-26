@@ -11,7 +11,7 @@
         <span class="corner tr"></span>
         <span class="corner bl"></span>
         <span class="corner br"></span>
-        <p id="quest-text">{{ text }}</p>
+        <p id="quest-text">{{ text | safe }}</p>
     </div>
 
     <div class="block image-block" id="scene-image">
@@ -32,7 +32,7 @@
         <form id="choices" method="post" action="/choose">
             {% for choice in choices %}
             <button type="submit" name="choice_index" value="{{ loop.index0 }}">
-                {{ choice.text }}
+                {{ choice.text | safe }}
             </button>
             {% endfor %}
         </form>

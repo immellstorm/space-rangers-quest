@@ -396,6 +396,63 @@ a:hover {
     flex-shrink: 0;
 }
 
+.highlight {
+    color: #ffd863 !important;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 216, 99, 0.3);
+}
+
+
+.glossary-term {
+    color: #7fe3ff !important;
+    border-bottom: 1px dotted #7fe3ff;
+    cursor: help;
+    position: relative;
+    display: inline-block;
+}
+
+.glossary-term:hover {
+    color: #ffd863 !important;
+    border-bottom-color: #ffd863;
+}
+
+.glossary-term::after {
+    content: none;
+}
+
+.glossary-term:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.98);
+    border: 1px solid #4a4aff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    width: max-content;
+    max-width: 280px;
+    font-size: 14px;
+    color: #e0e0e0;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.9);
+    white-space: normal;
+    line-height: 1.4;
+    text-align: left;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    display: block;
+}
+
+.inventory-line {
+    font-size: 14px;
+    color: #9eacac;
+    margin: 0;
+}
+
+
 @media (max-width: 768px) {
 
     .layout-scene,
@@ -416,12 +473,6 @@ a:hover {
     .image-block {
         min-height: 200px;
     }
-}
-
-.inventory-line {
-    font-size: 14px;
-    color: #9eacac;
-    margin: 0;
 }
 
 @media (max-width: 600px) {
