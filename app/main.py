@@ -270,5 +270,11 @@ def glossary_page(request: Request):
 
     return templates.TemplateResponse(request, "glossary.html", {
         "by_category": by_category,
-        "categories_order": [...],
+        "categories_order": [
+            "Расы",
+            "Персонажи",
+            "Планеты",
+            "Звёздные системы",
+            "Организации",
+        ],
     })
