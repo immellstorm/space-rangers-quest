@@ -50,27 +50,6 @@
 </div>
 
 <audio loop preload="auto" src="/static/audio/background.mp3" id="menu-music"></audio>
-<script>
-    (function () {
-        const a = document.getElementById("menu-music");
-        if (a) {
-            a.volume = 0.25;
-            const play = () => a.play().catch(() => { });
-            play();
-            document.addEventListener("click", play, { once: true });
-            document.addEventListener("keydown", play, { once: true });
-        }
-
-        // --- кнопка "вернуться" ---
-        const btn = document.getElementById("back-to-game");
-        if (btn) {
-            btn.addEventListener("click", function (e) {
-                if (history.length > 1) {
-                    e.preventDefault();
-                    history.back();
-                }
-            });
-        }
-    })();
-</script>
+<script src="/static/js/music.js"></script>
+<script src="/static/js/back.js"></script>
 {% endblock %}

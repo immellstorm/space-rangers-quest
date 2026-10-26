@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 
 from fastapi import FastAPI, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -11,14 +12,14 @@ from app.images import get_scene_image
 from app.scenes import (
     SCENES, get_scene, make_choice, visible_choices, apply_effects,
 )
-from app.auth import init_db, login_or_create
 from app.sessions import load_state, save_state, reset_state
 from app.glossary import GLOSSARY
+from app.auth import init_db, login_or_create, connect
 
 BASE_DIR = Path(__file__).resolve().parent
 
-SECRET_KEY = os.getenv("KR_SECRET_KEY", "dev-only-change-me")
-IS_PROD = os.getenv("KR_ENV", "dev") == "prod"
+SECRET_KEY = "kosmicheskie-rendzhery-secret-2024-x7k9"
+IS_PROD = not sys.platform.startswith("win") and "127.0.0.1" not in os.getenv("HOST", "")
 
 app = FastAPI(title="Космические квесты")
 app.add_middleware(
@@ -72,12 +73,16 @@ def login_form(request: Request):
 
 
 @app.post("/login", response_class=HTMLResponse)
-def login_submit(request: Request, username: str = Form(...)):
-    user_id = login_or_create(username)
+def login_submit(
+    request: Request,
+    username: str = Form(...),
+    pin: str = Form(...),
+):
+    user_id = login_or_create(username, pin)
     if user_id is None:
         return templates.TemplateResponse("auth.html", {
             "request": request,
-            "error": "Имя должно быть от 3 до 32 символов",
+            "error": "Неверное имя или PIN",
         }, status_code=400)
     request.session["user_id"] = user_id
     return RedirectResponse("/", status_code=303)
@@ -251,8 +256,6 @@ def api_state(request: Request):
 
 
 def _get_username(user_id: int) -> str:
-    """Короткий хелпер: вытащить имя из users для отображения."""
-    from app.auth import connect
     with connect() as conn:
         row = conn.execute(
             "SELECT username FROM users WHERE id = ?", (user_id,)

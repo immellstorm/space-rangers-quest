@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,7 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+                pin_hash TEXT,
                 created_at TEXT NOT NULL
             )
         """)
@@ -41,21 +43,46 @@ def init_db() -> None:
         """)
         conn.commit()
 
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN pin_hash TEXT")
+        except sqlite3.OperationalError:
+            pass
 
-def login_or_create(username: str) -> Optional[int]:
+
+def _pin_hash(pin: str, salt: str) -> str:
+    return hashlib.sha256((salt + pin).encode()).hexdigest()
+
+
+def login_or_create(username: str, pin: str) -> Optional[int]:
     username = username.strip()
     if len(username) < 3 or len(username) > 32:
         return None
+    if not (4 <= len(pin) <= 6) or not pin.isdigit():
+        return None
+
     now = datetime.utcnow().isoformat()
     with connect() as conn:
         row = conn.execute(
-            "SELECT id FROM users WHERE username = ?", (username,)
+            "SELECT id, pin_hash FROM users WHERE username = ?", (username,)
         ).fetchone()
+
         if row:
-            return row["id"]
+            if row["pin_hash"] is None:
+                conn.execute(
+                    "UPDATE users SET pin_hash = ? WHERE id = ?",
+                    (_pin_hash(pin, username), row["id"]),
+                )
+                conn.commit()
+                return row["id"]
+            # PIN совпал — пускаем
+            if row["pin_hash"] == _pin_hash(pin, username):
+                return row["id"]
+            # PIN не совпал — отказ
+            return None
+
         cur = conn.execute(
-            "INSERT INTO users (username, created_at) VALUES (?, ?)",
-            (username, now),
+            "INSERT INTO users (username, pin_hash, created_at) VALUES (?, ?, ?)",
+            (username, _pin_hash(pin, username), now),
         )
         uid = cur.lastrowid
         conn.execute(

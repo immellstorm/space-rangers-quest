@@ -2,5 +2,8 @@ fastapi
 uvicorn[standard]
 jinja2
 python-multipart
-python-dotenv
 itsdangerous
+pytest
+pytest-playwright
+playwright
+httpx

@@ -69,8 +69,9 @@
 
         {% if state.days > 0 %}
         <h2>Задание</h2>
-        <p><span>{{ state.days }}</span> дн.</p>
+        <p id="days-line"><span>{{ state.days }}</span> дн.</p>
         {% endif %}
+
 
         {% if state.trust.Kacap is defined %}
         <h2>Доверие Кацапа</h2>
@@ -83,6 +84,9 @@
         <p>{{ line }}</p>
         {% endfor %}
         {% endif %}
+        <form method="post" action="/reset" onsubmit="return confirm('Начать заново? Прогресс потеряется.');">
+            <button type="submit" class="logout-btn" style="margin-top:12px;">Начать заново</button>
+        </form>
     </div>
 
 </div>

@@ -298,17 +298,6 @@ a:hover {
     background: #6a6aff;
 }
 
-#intro-text {
-    font-size: 22px;
-    text-align: center;
-    margin: 0;
-    color: #ffd863;
-    text-shadow:
-        0 0 8px rgba(255, 216, 99, 0.6),
-        0 2px 4px rgba(0, 0, 0, 0.9);
-    letter-spacing: 1px;
-}
-
 #intro-form {
     display: flex;
     flex-direction: column;
@@ -448,34 +437,12 @@ a:hover {
     border-bottom: 1px dotted #7fe3ff;
     cursor: help;
     position: relative;
+    cursor: pointer;
 }
 
 .glossary-term:hover {
     color: #ffd863 !important;
     border-bottom-color: #ffd863;
-}
-
-.glossary-tooltip-fixed {
-    position: fixed;
-    display: none;
-    background: rgba(0, 0, 0, 0.98);
-    border: 1px solid #4a4aff;
-    padding: 10px 15px;
-    border-radius: 5px;
-    max-width: min(280px, calc(100vw - 40px));
-    font-size: 14px;
-    color: #e0e0e0;
-    z-index: 99999;
-    pointer-events: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.9);
-    white-space: normal;
-    line-height: 1.4;
-    word-wrap: break-word;
-    text-align: left;
-}
-
-.glossary-tooltip-fixed.visible {
-    display: block;
 }
 
 .inventory-line {

@@ -20,22 +20,14 @@
             <form method="post" action="/login" id="intro-form">
                 <input type="text" name="username" required minlength="3" maxlength="32" placeholder="Твоё имя"
                     id="player-name-input" autocomplete="username">
+                <input type="password" name="pin" required minlength="4" maxlength="6" inputmode="numeric"
+                    pattern="\d{4,6}" placeholder="PIN (4–6 цифр)" id="player-name-input"
+                    autocomplete="current-password">
                 <button type="submit">Войти</button>
             </form>
         </div>
     </div>
 </div>
 <audio loop preload="auto" src="/static/audio/background.mp3" id="menu-music"></audio>
-<script>
-    (function () {
-        const a = document.getElementById('menu-music');
-        if (!a) return;
-        a.volume = 0.25;
-
-        const play = () => a.play().catch(() => { });
-        play();  // попытка автоплея
-        document.addEventListener('click', play, { once: true });
-        document.addEventListener('keydown', play, { once: true });
-    })();
-</script>
+<script src="/static/js/music.js" defer></script>
 {% endblock %}

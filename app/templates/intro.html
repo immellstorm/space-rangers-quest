@@ -46,16 +46,5 @@
 </div>
 
 <audio loop preload="auto" src="/static/audio/background.mp3" id="menu-music"></audio>
-<script>
-    (function () {
-        const a = document.getElementById('menu-music');
-        if (!a) return;
-        a.volume = 0.25;
-
-        const play = () => a.play().catch(() => { });
-        play();
-        document.addEventListener('click', play, { once: true });
-        document.addEventListener('keydown', play, { once: true });
-    })();
-</script>
+<script src="/static/js/music.js" defer></script>
 {% endblock %}
