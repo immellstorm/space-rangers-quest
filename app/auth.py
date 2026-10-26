@@ -4,7 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "kr.db"
+import os
+DB_PATH = Path(os.environ.get("DATA_DIR", "/data")) / "kr.db"
 
 
 def connect() -> sqlite3.Connection:
