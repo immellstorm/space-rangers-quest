@@ -67,8 +67,8 @@ FINAL_SCENES = {
 def login_form(request: Request):
     if request.session.get("user_id"):
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse("auth.html", {
-        "request": request, "error": None,
+    return templates.TemplateResponse(request, "auth.html", {
+        "error": None,
     })
 
 
@@ -80,10 +80,9 @@ def login_submit(
 ):
     user_id = login_or_create(username, pin)
     if user_id is None:
-        return templates.TemplateResponse("auth.html", {
-            "request": request,
-            "error": "Неверное имя или PIN",
-        }, status_code=400)
+        return templates.TemplateResponse(request, "auth.html", {
+        "error": "Неверное имя или PIN",
+    }, status_code=400)
     request.session["user_id"] = user_id
     return RedirectResponse("/", status_code=303)
 
@@ -103,8 +102,7 @@ def index(request: Request):
     state = load_state(user_id)
 
     if not state["player_name"]:
-        return templates.TemplateResponse("intro.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "intro.html", {
             "username": _get_username(user_id),
         })
 
@@ -161,8 +159,8 @@ def index(request: Request):
         total_ml += flags.get("sandy_g", 0) + flags.get("flowers_g", 0)
         brew_lines.append(f"Стакан заполнен на {total_ml} мл")
 
-    return templates.TemplateResponse("scene.html", {
-        "request": request, "scene": scene, "state": state,
+    return templates.TemplateResponse(request, "scene.html", {
+        "scene": scene, "state": state,
         "text": text, "choices": choices,
         "inventory_display": inventory_display,
         "brew_lines": brew_lines,
@@ -218,8 +216,8 @@ def quests_list(request: Request):
     state = load_state(user_id)
     if not state["player_name"]:
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse("quests.html", {
-        "request": request, "state": state, "quests": QUESTS,
+    return templates.TemplateResponse(request, "quests.html", {
+        "state": state, "quests": QUESTS,
     })
 
 
@@ -270,9 +268,7 @@ def glossary_page(request: Request):
     for cat in by_category:
         by_category[cat].sort(key=lambda kv: kv[1]["title"])
 
-    return templates.TemplateResponse("glossary.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "glossary.html", {
         "by_category": by_category,
-        "categories_order": ["Расы", "Персонажи", "Планеты", "Звёздные системы",
-                             "Организации"],
+        "categories_order": [...],
     })
