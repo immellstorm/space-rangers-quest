@@ -2898,7 +2898,7 @@ SCENES = {
             " - Учтем! - коротко ответил Русман. - Спасибо за информацию, {player_name}"
         ),
         "choices": [
-            {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки",
+            {"text": "Рассказать еще детали",
             "next": "need_more_info_cosmo",
             "gives": {"flags": {"cosmo_intel_ok": True}}}, 
         ]
@@ -3792,10 +3792,6 @@ SCENES = {
             {"text": "4 бомбы", "next": "set_bombs_common",
             "condition": {"inventory_at_least": {"bomb": 4}},
             "gives": {"inventory": {"bomb": -4}, "flags": {"bombs_placed": 4}}},
-
-            {"text": "5 бомб", "next": "set_bombs_common",
-            "condition": {"inventory_at_least": {"bomb": 5}},
-            "gives": {"inventory": {"bomb": -5}, "flags": {"bombs_placed": 5}}},
         ],
     },  
 
@@ -3822,7 +3818,7 @@ SCENES = {
                 "flag_present": "cosmo_intel_ok",
                 "flag_absent": "cosmo_intel_bad",
                 "flags_exact": {
-                    "bombs_placed": 5,
+                    "bombs_placed": 4,
                     "ryaska_ok": True,
                     "ryaska_given": True,
                     "katsap_let_go": True,
@@ -3841,7 +3837,7 @@ SCENES = {
     "mission_end_secret": {
         "title": "Гнездо пиратов",
            "text": (
-            " Пять зарядов сделали то, чего не смогли бы два. Первый пробил топливный бак, "
+            " Четыре зарядов сделали то, чего не смогли бы два. Первый пробил топливный бак, "
             "второй рванул силовую установку, третий — реактор, а четвёртый и пятый "
             "сложили крейсер пополам, как дешёвую игрушку. Ударная волна прошлась "
             "по космодрому, снесла ангары и вмяла в землю наблюдательные вышки.\n\n"

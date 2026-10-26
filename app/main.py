@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi import FastAPI, Form, Request, HTTPException
+from app.images import get_scene_image 
 
 from app.scenes import (
     SCENES,
@@ -174,6 +175,7 @@ def index(request: Request):
             "choices": choices,
             "inventory_display": inventory_display,
             "brew_lines": brew_lines,
+            "scene_image": get_scene_image(STATE["current_scene"]),
         },
     )
 

@@ -19,7 +19,8 @@
         <span class="corner tr"></span>
         <span class="corner bl"></span>
         <span class="corner br"></span>
-        <img src="/static/images/your_name.jpeg" alt="{{ scene.title }}">
+        <img src="/static/images/{{ scene_image }}" alt="{{ scene.title }}"
+            onerror="this.src='/static/images/your_name.jpg'">
     </div>
 
     <div class="block choices-block">
