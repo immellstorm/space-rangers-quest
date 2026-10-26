@@ -116,6 +116,7 @@ a:hover {
 .inventory-block {
     min-height: 0;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     padding-right: 8px;
 }
 
@@ -447,7 +448,6 @@ a:hover {
     border-bottom: 1px dotted #7fe3ff;
     cursor: help;
     position: relative;
-    display: inline-block;
 }
 
 .glossary-term:hover {
@@ -455,33 +455,26 @@ a:hover {
     border-bottom-color: #ffd863;
 }
 
-.glossary-term::after {
-    content: none;
-}
-
-.glossary-term:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+.glossary-tooltip-fixed {
+    position: fixed;
+    display: none;
     background: rgba(0, 0, 0, 0.98);
     border: 1px solid #4a4aff;
     padding: 10px 15px;
     border-radius: 5px;
-    width: max-content;
-    max-width: 280px;
+    max-width: min(280px, calc(100vw - 40px));
     font-size: 14px;
     color: #e0e0e0;
-    z-index: 9999;
+    z-index: 99999;
     pointer-events: none;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.9);
     white-space: normal;
     line-height: 1.4;
+    word-wrap: break-word;
     text-align: left;
-    font-weight: normal;
-    font-style: normal;
-    text-decoration: none;
+}
+
+.glossary-tooltip-fixed.visible {
     display: block;
 }
 
@@ -668,6 +661,53 @@ a:hover {
 .glossary-link:hover {
     background: #4a4aff;
     color: white;
+}
+
+.glossary-tooltip-fixed {
+    position: fixed;
+    display: none;
+    background: rgba(0, 0, 0, 0.98);
+    border: 1px solid #4a4aff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    max-width: min(280px, calc(100vw - 40px));
+    font-size: 14px;
+    color: #e0e0e0;
+    z-index: 99999;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.9);
+    white-space: normal;
+    line-height: 1.4;
+    word-wrap: break-word;
+    text-align: left;
+}
+
+.glossary-tooltip-fixed.visible {
+    display: block;
+}
+
+.glossary-float {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #4a4aff;
+    border-radius: 50%;
+    font-size: 20px;
+    text-decoration: none;
+    z-index: 999;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.glossary-float:hover {
+    background: rgba(74, 74, 255, 0.5);
+    border-color: #ffd863;
+    transform: scale(1.1);
 }
 
 
