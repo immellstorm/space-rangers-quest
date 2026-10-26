@@ -13,6 +13,7 @@ from app.scenes import (
 )
 from app.auth import init_db, login_or_create
 from app.sessions import load_state, save_state, reset_state
+from app.glossary import GLOSSARY
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -257,3 +258,18 @@ def _get_username(user_id: int) -> str:
             "SELECT username FROM users WHERE id = ?", (user_id,)
         ).fetchone()
     return row["username"] if row else "Рейнджер"
+
+@app.get("/glossary", response_class=HTMLResponse)
+def glossary_page(request: Request):
+    by_category = {}
+    for key, item in GLOSSARY.items():
+        by_category.setdefault(item["category"], []).append((key, item))
+    for cat in by_category:
+        by_category[cat].sort(key=lambda kv: kv[1]["title"])
+
+    return templates.TemplateResponse("glossary.html", {
+        "request": request,
+        "by_category": by_category,
+        "categories_order": ["Расы", "Персонажи", "Планеты", "Звёздные системы",
+                             "Организации"],
+    })

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Глоссарий — Космические квесты{% endblock %}
+
+<p style="text-align:center; font-size:13px; color:#6e7a7a; margin:0;">
+    <a href="/" id="back-to-game" style="color:#7fe3ff;">← вернуться в игру</a>
+</p>
+
+{% if request.url.path != '/glossary' %}
+<a href="/glossary" class="glossary-float" title="Глоссарий">📖</a>
+{% endif %}
+
+{% block content %}
+<div class="layout intro-layout">
+    <div class="main-col">
+
+        <div class="block">
+            <span class="corner tl"></span>
+            <span class="corner tr"></span>
+            <span class="corner bl"></span>
+            <span class="corner br"></span>
+            <p style="text-align:center; font-size:13px; color:#6e7a7a; margin:0;">
+                <a href="/quests">← к выбору квеста</a> ·
+                <a href="/">в игру</a>
+            </p>
+            <h2 style="text-align:center; margin-top:12px;">Глоссарий</h2>
+            <p style="text-align:center; color:#9eacac;">
+                Всё, что нужно знать о Галактике перед началом приключения.
+            </p>
+        </div>
+
+        {% for category in categories_order %}
+        {% if category in by_category %}
+        <div class="block">
+            <span class="corner tl"></span>
+            <span class="corner tr"></span>
+            <span class="corner bl"></span>
+            <span class="corner br"></span>
+            <h3 class="glossary-category">{{ category }}</h3>
+
+            {% for key, item in by_category[category] %}
+            <article class="glossary-entry" id="{{ key }}">
+                <h4 class="glossary-title">{{ item.title }}</h4>
+                <p class="glossary-short">{{ item.short }}</p>
+                <p class="glossary-full">{{ item.full | replace('\n\n', '</p>
+                <p class="glossary-full">') | safe }}</p>
+                <p style="text-align:right; margin-top:8px;">
+                    <a href="#top" class="link-back">↑ наверх</a>
+                </p>
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endfor %}
+
+    </div>
+</div>
+
+<audio loop preload="auto" src="/static/audio/background.mp3" id="menu-music"></audio>
+<script>
+    (function () {
+        const a = document.getElementById('menu-music');
+        if (!a) return;
+        a.volume = 0.25;
+
+        const play = () => a.play().catch(() => { });
+        play();  // попытка автоплея
+        document.addEventListener('click', play, { once: true });
+        document.addEventListener('keydown', play, { once: true });
+
+        document.getElementById("back-to-game").addEventListener("click", function (e) {
+            const from = sessionStorage.getItem("glossary_from");
+            if (from) {
+                e.preventDefault();
+                window.location.href = from;
+            }
+        });
+    })();
+</script>
+{% endblock %}

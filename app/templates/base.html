@@ -13,6 +13,10 @@
         {% block content %}{% endblock %}
     </div>
 
+    <a href="/glossary" class="glossary-float" title="Глоссарий — что значат термины">
+        📖
+    </a>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const glossary = {
@@ -32,6 +36,11 @@
                 const key = term.getAttribute("data-term");
                 if (key && glossary[key]) {
                     term.setAttribute("data-tooltip", glossary[key]);
+                    // при клике — переход на статью
+                    term.style.cursor = "pointer";
+                    term.addEventListener("click", () => {
+                        window.location.href = `/glossary#${key}`;
+                    });
                 }
             });
         });

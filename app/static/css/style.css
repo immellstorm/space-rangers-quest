@@ -462,7 +462,7 @@ a:hover {
 .glossary-term:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: calc(100% + 8px);
+    top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.98);
@@ -574,6 +574,102 @@ a:hover {
     padding: 20px;
 }
 
+.glossary-category {
+    font-size: 22px;
+    color: #ffd863;
+    border-bottom: 2px solid #4a4aff;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.glossary-entry {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed rgba(74, 74, 255, 0.3);
+}
+
+.glossary-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.glossary-title {
+    font-size: 18px;
+    color: #ffd863;
+    margin: 0 0 6px;
+    font-weight: bold;
+}
+
+.glossary-short {
+    color: #7fe3ff;
+    font-style: italic;
+    font-size: 14px;
+    margin: 0 0 12px;
+}
+
+.glossary-full {
+    color: #9eacac;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 12px;
+}
+
+.link-back {
+    color: #6e7a7a;
+    font-size: 12px;
+    text-decoration: none;
+    border-bottom: 1px dotted #6e7a7a;
+}
+
+.link-back:hover {
+    color: #ffd863;
+    border-bottom-color: #ffd863;
+}
+
+.glossary-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.glossary-toc a {
+    padding: 4px 12px;
+    background: rgba(74, 74, 255, 0.15);
+    border: 1px solid #4a4aff;
+    border-radius: 12px;
+    color: #9eacac;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.glossary-toc a:hover {
+    background: #4a4aff;
+    color: white;
+}
+
+.glossary-link {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(74, 74, 255, 0.15);
+    border: 1px solid #4a4aff;
+    border-radius: 5px;
+    color: #7fe3ff;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.glossary-link:hover {
+    background: #4a4aff;
+    color: white;
+}
+
 
 @media (max-width: 768px) {
 
@@ -616,7 +712,6 @@ a:hover {
     .image-block {
         min-height: 200px;
         max-height: none;
-        /* картинка пусть сжимается по содержимому */
     }
 }
 
@@ -629,5 +724,13 @@ a:hover {
     .quest-thumb {
         width: 100%;
         height: auto;
+    }
+
+    .glossary-float {
+        width: 38px;
+        height: 38px;
+        top: 12px;
+        right: 12px;
+        font-size: 16px;
     }
 }
