@@ -109,15 +109,7 @@ a:hover {
     gap: 24px;
     flex: 1;
     min-height: 0;
-}
-
-.text-block,
-.choices-block,
-.inventory-block {
-    min-height: 0;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    padding-right: 8px;
+    max-height: calc(100dvh - 120px);
 }
 
 .text-block::-webkit-scrollbar,
@@ -145,6 +137,10 @@ a:hover {
 .inventory-block {
     scrollbar-width: thin;
     scrollbar-color: #4a4aff rgba(74, 74, 255, 0.1);
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-right: 8px;
 }
 
 .text-block {
@@ -687,14 +683,6 @@ a:hover {
         grid-template-rows: auto;
     }
 
-    .text-block,
-    .image-block,
-    .choices-block,
-    .inventory-block {
-        grid-column: 1;
-        grid-row: auto;
-    }
-
     .image-block {
         min-height: 200px;
     }
@@ -713,7 +701,6 @@ a:hover {
         grid-column: 1;
         grid-row: auto;
         max-height: 60vh;
-        /* ← добавили */
     }
 
     .image-block {
