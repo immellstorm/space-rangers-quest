@@ -134,7 +134,7 @@ SCENES = {
         ),
         "choices": [
             {"text": "У меня нет вопросов. Давай приступим к делу", "next": "accepted",
-            "gives": {"money": 1000, "days": 3}},
+            "gives": {"money": 1000, "days": 3, "flags": {"timer_started": True}}},
             {"text": "Ты пойдешь со мной на задание?", "next": "rusman_and_who", "condition": {"flag_absent": "asked_who"}, "gives": {"flags": {"asked_who": True}}},
             {"text": "Что известно о космодроме?", "next": "rusman_and_cosmodrom", "condition": {"flag_absent": "asked_cosmodrom"}, "gives": {"flags": {"asked_cosmodrom": True}}},
             {"text": "Как завоевать доверие Кацапа?", "next": "rusman_and_katap", "condition": {"flag_absent": "asked_katap"}, "gives": {"flags": {"asked_katap": True}}},
@@ -910,9 +910,13 @@ SCENES = {
         "title": "Гнездо пиратов",
         "text": " Вы у небольшой деревянной кабинки, имеющей на удивление современную дверь. Замок адаптирован под широко используемые магнитные карты. Рядом стоит пеленг, покручивая в руках ту самую магнитную карту.  \"Хы-хы, - подумали вы, - у меня своя карточка есть \", - и с довольным видом нащупали магнитку в кармане.",
         "choices": [
-            {"text": "Вставить магнитную карту", "next": "set_card"},
-            {"text": "Заговорить с пеленгом", "next": "spick_storeroom_peling"},
-            {"text": "Отойти от кладовки", "next": "outside"},
+            {"text": "Вставить магнитную карту",
+            "next": "set_card",
+            "condition": {"inventory_has_all": ["card"]}},
+            {"text": "Заговорить с пеленгом",
+            "next": "spick_storeroom_peling"},
+            {"text": "Отойти от кладовки",
+            "next": "outside"},
         ],
     },
 
@@ -1037,12 +1041,12 @@ SCENES = {
             "Пеленг быстро направился к вам с явно недобрыми намерениями: "
             "— Ты какого мои водоросли рвешь? А?"
         ),
-         "choices": [
+        "choices": [
             {"text":"Кто сказал, что они твои, лягва?!", "next": "fight_peling", 
-            "condition": {"flag_absent": "post_150_rub", "money_at_least": 150},
+            "condition": {"flag_absent": "fight_peling"},   
             "gives": {"flags": {"fight_peling": True}, "trust": {"Kacap": +12}}},
             {"text": "Постой, давай все мирно уладим. 150 рублей хватит?", "next": "post_150_rub",
-            "condition": {"flag_absent": "post_150_rub"},
+            "condition": {"flag_absent": "post_150_rub", "money_at_least": 150},  # ✅
             "gives": {"flags": {"post_150_rub": True}, "money": -150}},
         ],
     },
@@ -1229,9 +1233,10 @@ SCENES = {
             "condition": {"flags_all": [
                 "added_sandy", "added_flowers", "added_acid",
                 "added_spirt", "added_water", "added_swarm_water",
-            ]}},
+            ], "flag_absent": "ryaska_brewed"}},
 
             {"text": "Свериться с рецептом", "next": "see_recept"},
+            {"text": "Выйти из кухни", "next": "cooking_room"},
         ],
     },
 
@@ -1254,6 +1259,7 @@ SCENES = {
         ),
         "choices": [
             {"text": "Вернуться к приготовлению напитка", "next": "brew_ryaska"}, 
+            {"text": "Выйти из кухни", "next": "cooking_room"},
         ],
     },
 
@@ -1312,8 +1318,13 @@ SCENES = {
             "Кацап протянул правую нижнюю руку."
         ),
         "choices": [
-            {"text": "Протянуть стакан", "next": "kill_katsap"},
-            {"text": "Рвануть на кухню, оправдываясь: \"Кажется, я напутал с рецептом, сейчас новую \"ряску\" принесу!\"", "next": "brew_ryaska", "gives": {"trust": {"Kacap": -15}}}
+            {"text": "Протянуть стакан",
+            "next": "kill_katsap",
+            "gives": {"inventory": {"ryaska": -1}}},         
+
+            {"text": "Рвануть на кухню, оправдываясь...",
+            "next": "brew_ryaska",
+            "gives": {"trust": {"Kacap": -15}}},
         ],
     },
 
@@ -1353,9 +1364,11 @@ SCENES = {
             "Кацап протянул правую нижнюю руку."
         ),
         "choices": [
-            {"text": "Протянуть стакан", "next": "like_katsap",
-            "gives": {"trust": {"Kacap": +35},
-                    "flags": {"ryaska_given": True}}},    
+                 {"text": "Протянуть стакан",
+                    "next": "like_katsap",
+                    "gives": {"trust": {"Kacap": +35},
+                            "inventory": {"ryaska": -1},          
+                            "flags": {"ryaska_given": True}}},  
             {"text": "Рвануть на кухню, оправдываясь: \"Кажется, я напутал с рецептом, сейчас новую \"ряску\" принесу!\"",
             "next": "brew_ryaska", "gives": {"trust": {"Kacap": -15}}}
         ],
@@ -1377,14 +1390,14 @@ SCENES = {
                     "spirt_ml": 50, "water_ml": 20, "swarm_water_ml": 20,
                 },
             },
-            "gives": {"flags": {"ryaska_ok": True},
-                    "inventory": {"ryaska": 1}}},
+            "gives": {"flags": {"ryaska_ok": True, "ryaska_brewed": True},
+                   "inventory": {"ryaska": 1}}},
 
             {"text": "Попробовать и нести Кацапу (пахнет не так...)",
             "next": "ryaska_failed",
             "condition": {"flag_absent": "true_acid"},
-            "gives": {"flags": {"ryaska_bad": True},
-                    "inventory": {"ryaska": 1}}},
+            "gives": {"flags": {"ryaska_bad": True, "ryaska_brewed": True},
+                   "inventory": {"ryaska": 1}}},
 
             {"text": "Попробовать и нести Кацапу (пахнет не так...)",
             "next": "ryaska_failed",
@@ -1395,8 +1408,8 @@ SCENES = {
                     "spirt_ml": 50, "water_ml": 20, "swarm_water_ml": 20,
                 },
             },
-            "gives": {"flags": {"ryaska_bad": True},
-                    "inventory": {"ryaska": 1}}},
+             "gives": {"flags": {"ryaska_bad": True, "ryaska_brewed": True},
+                   "inventory": {"ryaska": 1}}},
         ],
     },
 
@@ -1841,7 +1854,13 @@ SCENES = {
     "check_katsap_room": {
         "title": "Гнездо пиратов",
         "text": (
-            "Вы открыли дверь и увидели, что Кацап, похоже, куда-то телепортировался - неплохой повод, чтобы похозяйничать здесь!"
+            "Комната босса встретила вас тишиной. Пахло дешёвым пеленгским "
+            "одеколоном и болотной тиной — видимо, Кацап так и не научился "
+            "плотно закрывать флакон с любимым парфюмом. Плоский стереовизор "
+            "на стене был выключен, кровать аккуратно заправлена, а на тумбочке "
+            "лежала недоеденная лягушачья лапка в сахаре. Самого хозяина нигде "
+            "не было — судя по тихому гудению телепортатора в углу, он куда-то "
+            "смылся в спешке. Отличный момент, чтобы осмотреться."
         ),
         "choices": [
             {"text": "Обыскать тумбу", "next": "check_katsap_tumb"},
@@ -1988,7 +2007,7 @@ SCENES = {
         "text": (
             " - Да ну... - протянул снова босс. - Не хочу, я пил уже сегодня. Тем более, не видишь, я важным делом занят. Стерек смотрю. Позже зайди, ладно? "
  
-            "\"- Ладно, - сказали вы.\", - подумали вы.."
+            "— Ладно, — сказали вы. — Позже зайду.\n"
         ),
         "choices": [
             {"text": "Выйти из комнаты босса", "next": "corridor"},
@@ -2185,6 +2204,7 @@ SCENES = {
             {"text": " Ну... давай о жизни поговорим", "next": "asc_about_live",
             "condition": {"flag_absent": "asc_about_live"},
             "gives": {"flags": {"asc_about_live": True}, "trust": {"Kacap": +5}}},
+            {"text": "Ладно, что-то я устал от разговоров. Поехали", "next": "katsap_no_more_say"}, 
         ],
     },
 
@@ -2848,7 +2868,7 @@ SCENES = {
       "choices": [
             {"text": "Я знаю, что возле космодрома были какие-то наблюдательные вышки ",
             "next": "only_dots",
-            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            "gives": {"flags": {"cosmo_intel_ok": True, "cosmo_intel_bad": False}}},
             {"text": "Я знаю, что возле космодрома были склады ядерных ракет планеты Полуось",
             "next": "nucker_rokets",
             "gives": {"flags": {"cosmo_intel_bad": True}}},
@@ -2920,16 +2940,16 @@ SCENES = {
             "  Русман удивился:"
             " Но ведь тут и крупный город Агро-Сити, и земледельческие поля, и радары, да мало ли чего еще. Странно. Надеюсь, ты прав. Теперь скажи, где он уже на этом континенте находится? Ну, там, в горах или еще где-то?"
         ),
-        "choices": [
-            {"text": "Космодром находится рядом с крупнейшей рекой этой луны - Нейле, в ее дельте",
+         "choices": [
+            {"text": "Космодром находится рядом с крупнейшей рекой этой луны — Нейле, в ее дельте",
             "next": "need_object",
-            "gives": {"flags": {"cosmo_intel_ok": True}}},
-            {"text": "Кацап говорил, что космодром находится под одной из оранжевых равнин, а точнее, под Великой Лунной Равниной",
+            "gives": {"flags": {"cosmo_intel_ok": True, "cosmo_intel_bad": False}}},
+            {"text": "Кацап говорил... под Великой Лунной Равниной",
             "next": "need_object",
-            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
             {"text": "Я не знаю особенностей географического положения космодрома",
             "next": "need_object",
-            "gives": {"flags": {"cosmo_intel_ok": True}}},
+            "gives": {"flags": {"cosmo_intel_bad": True}}},
         ]
     },
 
@@ -3228,7 +3248,7 @@ SCENES = {
             " Вы лежите на мягкой зеленой кровати. Прямо на стене висит широкий стереовизор. Мягкая подушка, на которой лежит ваша голова, приглашает вас заснуть крепким сном. Но делать этого сейчас нельзя."
         ),
         "choices": [
-            {"text": "Уснуть", "next": "go_sleep", "gives": {"days": -1}},
+            {"text": "Уснуть", "next": "go_sleep"}, 
             {"text": "Смотреть стереовизор", "next": "see_tv"},
             {"text": "Обдумать план побега", "next": "escape"},
             {"text": "Встать с кровати", "next": "my_room"},
@@ -3243,7 +3263,11 @@ SCENES = {
             "Так прошел один важный день, за который вы могли сделать многое, чтобы получить доступ на корабль."
         ),
         "choices": [
-            {"text": "Проснуться", "next": "bed"},
+        
+            {"text": "Проснуться",
+            "next": "bed",
+            "condition": {"days_at_least": 1},
+            "gives": {"days": -1}},                    
         ]
     },
 
@@ -3257,7 +3281,7 @@ SCENES = {
             "сражались под собственным флагом. \"Этакое возвращение в век открытия первых разумных рас\", - подумали вы."
         ),
         "choices": [
-            {"text": "Лечь спать", "next": "go_sleep", "gives": {"days": -1}},
+            {"text": "Лечь спать", "next": "go_sleep"},
             {"text": "Вернуться к делам", "next": "my_room"},
         ]
     },
@@ -3351,7 +3375,7 @@ SCENES = {
     "go_cosmodrom": {
         "title": "Гнездо пиратов",
         "text": (
-            "Вы последовали за боссом в гараж. А спустя минуту заняли место в том самом аэрокаре люкс-класса, на котором прибыли сюда. Аэрокар приподнялся, и в метре над землей помчался в сторону далеких равнин. Машина летела несколько часов, прежде чем остановилась у небольшого десантного флаера, куда вы и пересели. Один из подручных Кацапа повел аэрокар назад в особняк. Флаер поднялся в воздух. Спустя час вы обнаружили, что стало холодно, а снаружи воет вьюга. Похоже, это какой-то полюсный материк. Флаер сел возле небольшого бункера, и вы, замерзая от холода, наблюдали, как Кацап в теплой одежде открывает автоматическую дверь. В бункере была всего одна лифтовая кабинка, спускавшаяся куда-то под землю. Босс зашел в нее, а вы, дрожа от холода, последовали за ним."
+            "Вы последовали за боссом в гараж. А спустя минуту заняли место в том самом аэрокаре люкс-класса, на котором прибыли сюда. Аэрокар приподнялся, и в метре над землей помчался в сторону далеких равнин. Машина летела несколько часов, прежде чем остановилась у небольшого десантного флаера, куда вы и пересели. Один из подручных Кацапа повел аэрокар назад в особняк. Флаер поднялся в воздух. Спустя час флаер сел на берегу широкой реки — точнее, в её дельте. Возле небольшого бункера кабина открылась. В бункере была всего одна лифтовая кабинка, спускавшаяся куда-то под землю. Босс зашел в нее, а вы последовали за ним."
         ),
         "choices": [
             {"text": "Зайти в лифт", "next": "enter_lift"},
@@ -3394,12 +3418,17 @@ SCENES = {
             "Что ж, значит, придется где-то раздобыть этот магнитный ключ."
         ),
         "choices": [
-            {"text": "Показать карту допуска на спецуровень", "next": "base_special_level",
-            "condition": {"inventory_has_all": ["access_card_special"]}},
-            {"text": "Проскочить, пока охрана отвлечена взрывом",
+            {"text": "Показать карту допуска на спецуровень",
             "next": "base_special_level",
-            "condition": {"flag_present": "guard_distracted"}},
-            {"text": "Вернуться в коридор", "next": "see_base"},
+            "condition": {"inventory_has_all": ["access_card_special"]}},
+
+            {"text": "Проскочить, пока охрана отвлечена взрывом",
+            "next": "base_angar",
+            "condition": {"flag_present": "guard_distracted"},
+            "gives": {"inventory": {"access_card_special": -1}}},  
+
+            {"text": "Вернуться в коридор",
+            "next": "see_base"},
         ],
     },
 
@@ -3788,24 +3817,24 @@ SCENES = {
             "ослепительный гриб."
         ),
        "choices": [
-            {"text": " Вызвать личный корабль и бежать к нему", "next": "mission_end_secret",
+           {"text": "Вызвать личный корабль и бежать к нему", "next": "mission_end_secret",
             "condition": {
+                "flag_present": "cosmo_intel_ok",
+                "flag_absent": "cosmo_intel_bad",
                 "flags_exact": {
                     "bombs_placed": 5,
-                    "cosmo_intel_ok": True,
-                    "cosmo_intel_bad": None,
-                    "ryaska_ok": True,          
-                    "ryaska_given": True,     
-                    "katsap_let_go": True,    
+                    "ryaska_ok": True,
+                    "ryaska_given": True,
+                    "katsap_let_go": True,
                 },
                 "trust_at_least": {"name": "Kacap", "value": 90},
             }},
 
             {"text": "Наблюдать за взрывом", "next": "mission_end_ok",
-            "condition": {"flags_exact": {"cosmo_intel_ok": True, "cosmo_intel_bad": None}}},
+            "condition": {"flag_present": "cosmo_intel_ok",
+                        "flag_absent": "cosmo_intel_bad"}},
 
-            {"text": "Наблюдать за взрывом", "next": "mission_end_fail",
-            "condition": {"flags_not_exact": {"cosmo_intel_ok": True, "cosmo_intel_bad": None}}},
+            {"text": "Наблюдать за взрывом", "next": "mission_end_fail"},
         ],
     },
 
@@ -3905,6 +3934,27 @@ SCENES = {
         ),
         "choices": [],
     }, 
+
+    "mission_end_timeout": {
+        "title": "Гнездо пиратов",
+        "text": (
+            " Вы просыпаетесь от того, что пол под ногами вздрагивает. "
+            "За окном — ослепительная вспышка, потом ещё одна. "
+            "Сирена, крики, топот ног по коридору.\n\n"
+            "Вы выбегаете из комнаты. В коридоре — паника. Учёные бегут "
+            "к лифту, малоки-охранники куда-то исчезли. А в окнах — "
+            "медленно поднимающийся в небо крейсер. Он уже стартовал.\n\n"
+            "Слишком поздно. Пока вы спали, пока разбирались с Кацапом, "
+            "пока искали подходы — три дня прошли. Крейсер Дзухаллага ушёл "
+            "в космос, и теперь его не достать. Галактика станет ещё на одну "
+            "войну беднее, а вы — ещё на один провал.\n\n"
+            "Можно, конечно, вернуться в космопорт, связаться с Русманом, "
+            "что-то объяснить. Но вы уже знаете, что он скажет. И что скажет "
+            "заказчик.\n\n"
+            "Задание провалено. В следующий раз спите меньше."
+        ),
+        "choices": [],
+    },
 }
 
 
@@ -3955,7 +4005,7 @@ def visible_choices(scene: dict, state: dict) -> list[dict]:
                     if not state["inventory"].get(item):
                         ok = False
                         break
-            elif key == "inventory_at_least":                       # ← новое
+            elif key == "inventory_at_least":                    
                 for item, minimum in value.items():
                     if state["inventory"].get(item, 0) < minimum:
                         ok = False
@@ -3966,12 +4016,22 @@ def visible_choices(scene: dict, state: dict) -> list[dict]:
             elif key == "money_at_least":
                 if state["money"] < value:
                     ok = False
+            elif key == "days_at_least":
+                if state["days"] < value:
+                    ok = False
+            elif key == "days_below":
+                if state["days"] >= value:
+                    ok = False
             elif key == "trust_below":
                 if state["trust"].get(value["name"], 0) >= value["value"]:
                     ok = False
             elif key == "trust_at_least":
                 if state["trust"].get(value["name"], 0) < value["value"]:
                     ok = False
+            else:
+                raise ValueError(
+                    f"Неизвестное условие выбора: {key!r} = {value!r}"
+                )
 
         if ok:
             visible.append(choice)

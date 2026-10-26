@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -37,7 +36,7 @@ QUESTS = [
     {
         "id": "pirate_lair",
         "title": "Гнездо пиратов",
-        "description": "Пиратская база. Крейсер доминаторов. И ты — один против всех.",
+        "description": "Три дня, чтобы стать своим среди чужих — втереться в доверие, выведать тайну и уйти живым",
         "start_scene": "start",
     },
 ]
@@ -67,18 +66,52 @@ ITEM_NAMES = {
     "access_card_special": "Карта допуска на спецуровень",
 }
 
+FINAL_SCENES = {
+    "rusman_and_cancel", "kill_katsap", "kill_katsap_nucker_malok",
+    "teleport_666h", "get_10000", "base_angar_fight_kill",
+    "katsap_drive", "plan_a", "plan_c",
+    "mission_end_secret", "mission_end_ok", "mission_end_fail",
+    "mission_end_timeout",
+}
+
+def _reset_state() -> None:
+    STATE.update({
+        "player_name": "",
+        "current_scene": "start",
+        "money": 0,
+        "relations": {},
+        "history": [],
+        "inventory": {},
+        "trust": {},
+        "flags": {},
+        "days": 0,
+    })
+
 @app.post("/start")
 def start(player_name: str = Form(...)):
+    _reset_state()
     STATE["player_name"] = player_name.strip() or "Рейнджер"
     return RedirectResponse("/quests", status_code=303)
+
+@app.post("/reset")
+def reset():
+    _reset_state()
+    return RedirectResponse("/", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     if not STATE["player_name"]:
         return templates.TemplateResponse("intro.html", {"request": request})
-    
+
     if "quest_id" not in STATE["flags"]:
         return RedirectResponse("/quests", status_code=303)
+
+    if (STATE["flags"].get("timer_started")
+            and STATE["days"] <= 0
+            and STATE["current_scene"] not in FINAL_SCENES
+            and STATE["current_scene"] != "go_sleep"):
+        STATE["current_scene"] = "mission_end_timeout"
+
     scene = get_scene(STATE["current_scene"])
 
     text = scene["text"].format(
@@ -148,6 +181,13 @@ def index(request: Request):
 
 @app.post("/choose")
 def choose(choice_index: int = Form(...)):
+    if (STATE["flags"].get("timer_started")
+            and STATE["days"] <= 0
+            and STATE["current_scene"] not in FINAL_SCENES
+            and STATE["current_scene"] != "go_sleep"):
+        STATE["current_scene"] = "mission_end_timeout"
+        return RedirectResponse("/", status_code=303)
+    
     next_scene, choice = make_choice(STATE["current_scene"], choice_index, STATE)
     apply_effects(STATE, choice.get("gives"))  
 
