@@ -71,19 +71,19 @@ def login_or_create(username: str, pin: str) -> Optional[int]:
             if row["pin_hash"] is None:
                 conn.execute(
                     "UPDATE users SET pin_hash = ? WHERE id = ?",
-                    (_pin_hash(pin, username), row["id"]),
+                    (_pin_hash(pin, username.lower()), row["id"]),
                 )
                 conn.commit()
                 return row["id"]
             # PIN совпал — пускаем
-            if row["pin_hash"] == _pin_hash(pin, username):
+            if row["pin_hash"] == _pin_hash(pin, username.lower()):
                 return row["id"]
             # PIN не совпал — отказ
             return None
 
         cur = conn.execute(
             "INSERT INTO users (username, pin_hash, created_at) VALUES (?, ?, ?)",
-            (username, _pin_hash(pin, username), now),
+            (username, _pin_hash(pin, username.lower()), now),
         )
         uid = cur.lastrowid
         conn.execute(

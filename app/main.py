@@ -19,7 +19,7 @@ from app.auth import init_db, login_or_create, connect
 BASE_DIR = Path(__file__).resolve().parent
 
 SECRET_KEY = "kosmicheskie-rendzhery-secret-2024-x7k9"
-IS_PROD = True
+IS_PROD = os.environ.get("IS_PROD", "true").lower() == "true"
 
 app = FastAPI(title="Космические квесты")
 app.add_middleware(

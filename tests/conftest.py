@@ -1,62 +1,112 @@
+import importlib
+
+import pytest
+import socket
 import subprocess
 import sys
 import time
+
 from pathlib import Path
 
-import pytest
-import requests
+@pytest.fixture
+def temp_db(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_URL = "http://127.0.0.1:8000"
+    from app import auth, sessions
+    importlib.reload(auth)
+    importlib.reload(sessions)
 
+    auth.init_db()
 
-@pytest.fixture(scope="session", autouse=True)
-def start_server():
-    process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app",
-         "--host", "127.0.0.1", "--port", "8000"],
-        cwd=BASE_DIR,
-        stdout=subprocess.DEVNULL,   # ← не блокирует
-        stderr=subprocess.DEVNULL,   # ← не блокирует
-    )
-    for _ in range(30):
-        try:
-            requests.get(f"{BASE_URL}/api/state", timeout=1)
-            break
-        except requests.ConnectionError:
-            time.sleep(0.5)
-    else:
-        process.terminate()
-        raise RuntimeError("FastAPI-сервер не запустился за 15 секунд")
+    yield tmp_path
 
-    yield process
+@pytest.fixture
+def client(temp_db):
+    from app import main
+    importlib.reload(main)
 
-    process.terminate()
-    process.wait(timeout=5)
+    from fastapi.testclient import TestClient
+    return TestClient(main.app, base_url="https://testserver")
 
 
 @pytest.fixture
-def api_client():
-    session = requests.Session()
-    yield session
-    session.close()
+def auth_client(client):
+    r = client.post("/login", data={"username": "alice", "pin": "1234"},
+                    follow_redirects=False)
+    assert r.status_code == 303, f"login failed: {r.status_code} {r.text}"
+
+    r = client.post("/start", data={"player_name": "Тестер"},
+                    follow_redirects=False)
+    assert r.status_code == 303, f"/start failed: {r.status_code}"
+
+    r = client.post("/quests/select", data={"quest_id": "pirate_lair"},
+                    follow_redirects=False)
+    assert r.status_code == 303, f"/quests/select failed: {r.status_code}"
+
+    return client
+
+def _wait_for_port(port, timeout=10.0):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.1)
+            if s.connect_ex(("127.0.0.1", port)) == 0:
+                return True
+        time.sleep(0.05)
+    return False
 
 
-@pytest.fixture(autouse=True)
-def reset_state(api_client):
-    api_client.post(f"{BASE_URL}/reset", allow_redirects=False)
-    yield
-
-@pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type_launch_args):
-    return {
-        **browser_type_launch_args,
-        "args": ["--no-sandbox", "--disable-setuid-sandbox"],
+@pytest.fixture(scope="function")
+def live_server(tmp_path):
+    port = _find_free_port()
+    env = {
+        "PATH": str(Path(sys.executable).parent),
+        "DATA_DIR": str(tmp_path),
+        "PYTHONPATH": str(Path(__file__).resolve().parent.parent),
+        "IS_PROD": "false", 
     }
 
-@pytest.fixture(scope="session")
-def browser_context_args(browser_context_args):
-    return {
-        **browser_context_args,
-        "viewport": {"width": 1280, "height": 720},
-    }
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "app.main:app",
+         "--host", "127.0.0.1", "--port", str(port), "--log-level", "warning"],
+        env=env,
+        cwd=str(Path(__file__).resolve().parent.parent),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    try:
+        if not _wait_for_port(port):
+            out, err = proc.communicate(timeout=2)
+            raise RuntimeError(f"uvicorn не поднялся: {err.decode()}")
+        yield f"http://127.0.0.1:{port}"
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+
+
+def _find_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+@pytest.fixture
+def game_page(live_server, page):
+    page.goto(f"{live_server}/login")
+    page.fill('input[name="username"]', "tester")
+    page.fill('input[name="pin"]', "1234")
+    page.get_by_role("button", name="Войти").click()
+
+    page.fill('input[name="player_name"]', "Тестер")
+    page.get_by_role("button", name="Начать приключение").click()
+
+    page.get_by_role("button").first.click()
+
+    assert page.locator("#quest-title").count() == 1, \
+        f"game_page: не дошли до сцены. URL={page.url}"
+
+    return page
