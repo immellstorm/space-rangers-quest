@@ -12,6 +12,9 @@ from app.auth import (
     login_or_create,  connect
 )
 
+from datetime import datetime as real_datetime
+import app.sessions
+
 def make_user(temp_db):
     uid = login_or_create("alice", "1234")
     assert uid is not None
@@ -83,3 +86,38 @@ def test_save_state_overwrites(temp_db):
         ).fetchone()["c"]
     assert count == 1
 
+def test_save_state_updates_timestamp(temp_db, monkeypatch):
+    uid = login_or_create("alice", "1234")
+
+    fake_now_1 = real_datetime(2026, 1, 1, 0, 0, 0)
+
+    class FakeDatetime1(real_datetime):
+        @classmethod
+        def utcnow(cls):
+            return fake_now_1
+
+    monkeypatch.setattr(app.sessions, "datetime", FakeDatetime1)
+    save_state(uid, make_state(money=100))
+
+    with connect() as conn:
+        first = conn.execute(
+            "SELECT updated_at FROM game_saves WHERE user_id = ?", (uid,)
+        ).fetchone()["updated_at"]
+    assert first == "2026-01-01T00:00:00"
+
+    fake_now_2 = real_datetime(2026, 1, 2, 0, 0, 0)
+
+    class FakeDatetime2(real_datetime):
+        @classmethod
+        def utcnow(cls):
+            return fake_now_2
+
+    monkeypatch.setattr(app.sessions, "datetime", FakeDatetime2)
+    save_state(uid, make_state(money=200))
+
+    with connect() as conn:
+        second = conn.execute(
+            "SELECT updated_at FROM game_saves WHERE user_id = ?", (uid,)
+        ).fetchone()["updated_at"]
+    assert second == "2026-01-02T00:00:00"
+    assert first != second 

@@ -6,7 +6,6 @@ def test_client_can_connect(client):
     r = client.get("/login")
     assert r.status_code == 200
 
-
 def test_auth_client_has_session(auth_client):
     r = auth_client.get("/api/state")
     assert r.status_code == 200
@@ -87,3 +86,35 @@ def test_first_creates_user_with_money(auth_client):
 def test_second_starts_fresh(auth_client):
     state = auth_client.get("/api/state").json()
     assert state["current_scene"] == "start"  
+
+def test_reset_clears_state(auth_client):
+    auth_client.post("/choose", data={"choice_index": 0})
+    assert auth_client.get("/api/state").json()["current_scene"] == "landing"
+
+    r = auth_client.post("/reset", follow_redirects=False)
+    assert r.status_code == 303
+
+    state = auth_client.get("/api/state").json()
+    assert state["current_scene"] == "start"
+    assert state["player_name"] == "" 
+
+def test_quest_select_invalid_id_returns_404(auth_client):
+    r = auth_client.post("/quests/select", data={"quest_id": "nonexistent"},
+                         follow_redirects=False)
+    assert r.status_code == 404
+
+def test_login_redirects_if_already_logged_in(auth_client):
+    r = auth_client.get("/login", follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"] == "/"
+
+def test_quests_redirects_without_player_name(client):
+    client.post("/login", data={"username": "noplayer", "pin": "1111"},
+                follow_redirects=False)
+    r = client.get("/quests", follow_redirects=False)
+    assert r.status_code == 303
+
+def test_glossary_renders_all_categories(client):
+    r = client.get("/glossary")
+    for cat in ["Расы", "Персонажи", "Планеты", "Звёздные системы", "Организации"]:
+        assert cat in r.text

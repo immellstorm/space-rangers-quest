@@ -109,3 +109,11 @@ def test_init_db_is_idempotent(temp_db):
     from app.auth import init_db
     init_db()  
     init_db()
+
+def test_login_upgrades_user_without_pin_hash(temp_db):
+    uid = login_or_create("legacy", "1234")
+    with connect() as conn:
+        conn.execute("UPDATE users SET pin_hash = NULL WHERE id = ?", (uid,))
+        conn.commit()
+
+    assert login_or_create("legacy", "5678") == uid
